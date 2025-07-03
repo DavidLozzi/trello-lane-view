@@ -54,7 +54,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
     const mockCards: TrelloCard[] = [
       {
         id: 'card-1',
-        name: 'User Authentication System',
+        name: 'POP ESF',
         desc: 'Implement secure login and registration system with JWT tokens and password hashing',
         pos: 1,
         due: '2024-07-15T09:00:00.000Z',
@@ -68,7 +68,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
       },
       {
         id: 'card-2',
-        name: 'Product Dashboard UI',
+        name: 'MSP',
         desc: 'Create responsive dashboard with charts and analytics for product metrics',
         pos: 2,
         due: '2024-07-20T17:00:00.000Z',
@@ -82,7 +82,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
       },
       {
         id: 'card-3',
-        name: 'Mobile App Payment Integration',
+        name: 'Cyber',
         desc: 'Integrate Stripe payment system for in-app purchases and subscriptions',
         pos: 3,
         due: '2024-08-01T12:00:00.000Z',
@@ -97,7 +97,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
       },
       {
         id: 'card-4',
-        name: 'API Rate Limiting',
+        name: 'Social',
         desc: 'Implement rate limiting and throttling for API endpoints to prevent abuse',
         pos: 4,
         due: null,
@@ -110,7 +110,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
       },
       {
         id: 'card-5',
-        name: 'User Onboarding Flow',
+        name: 'HC',
         desc: 'Design and implement guided onboarding experience for new users with interactive tutorials',
         pos: 5,
         due: '2024-07-25T14:30:00.000Z',
