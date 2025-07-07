@@ -324,8 +324,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                           key={list.id}
                           className={cn(
                             'flex items-center gap-1 px-3 py-1 transition-all duration-200',
-                            getStatusColor(status),
-                            status === 'current' && 'animate-pulse-soft'
+                            getStatusColor(status)
                           )}
                         >
                           {getStatusIcon(status)}
