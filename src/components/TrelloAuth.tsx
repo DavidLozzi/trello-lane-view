@@ -95,7 +95,7 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
                 )}
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground">
               Create a Power-Up at{' '}
               <a 
                 href="https://trello.com/power-ups/admin" 
@@ -119,7 +119,7 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
                    <Copy className="w-3 h-3" />
                  </Button>
                </div>
-            </p>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -147,9 +147,9 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
                 )}
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground">
               In your Power-Up's API key tab, click the "Token" link to get your access token
-            </p>
+            </div>
           </div>
 
           {error && (
