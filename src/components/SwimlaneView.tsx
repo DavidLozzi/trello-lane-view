@@ -53,7 +53,6 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [sortBy, setSortBy] = useState<'progress' | 'name' | 'created'>('progress');
-  const [showLastColumn, setShowLastColumn] = useState(false);
   const [viewMode, setViewMode] = useState<'swimlane' | 'table'>('swimlane');
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
 
@@ -231,12 +230,6 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
     // Filter out cards that are in hidden columns
     filtered = filtered.filter(progress => visibleColumns.includes(progress.card.list.id));
     
-    // Filter out last column cards if showLastColumn is false (only for swimlane view)
-    if (viewMode === 'swimlane' && !showLastColumn && lists.length > 0) {
-      const lastListIndex = lists.length - 1;
-      filtered = filtered.filter(progress => progress.currentListIndex !== lastListIndex);
-    }
-    
     switch (sortBy) {
       case 'progress':
         return filtered.sort((a, b) => a.currentListIndex - b.currentListIndex);
@@ -391,17 +384,6 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
-                
-                {viewMode === 'swimlane' && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowLastColumn(!showLastColumn)}
-                    className="h-8 text-xs px-3"
-                  >
-                    {showLastColumn ? 'Hide Last' : 'Show Last'}
-                  </Button>
-                )}
               </div>
 
               <div className="flex items-center gap-2">
