@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { SwimlaneView } from '@/components/SwimlaneView';
 import { TrelloAuth } from '@/components/TrelloAuth';
 import { BoardSelector } from '@/components/BoardSelector';
+import { OAuthCallback } from '@/components/OAuthCallback';
 import { TrelloBoard } from '@/types/trello';
 
 const STORAGE_KEY = 'trello_credentials';
@@ -10,6 +11,7 @@ const STORAGE_KEY = 'trello_credentials';
 const Index = () => {
   const { boardId, boardName } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [authState, setAuthState] = useState<{
     apiKey: string;
     token: string;
@@ -93,6 +95,11 @@ const Index = () => {
       navigate('/');
     }
   };
+
+  // Handle OAuth callback
+  if (location.pathname === '/oauth/callback') {
+    return <OAuthCallback onAuthenticated={handleAuthenticated} />;
+  }
 
   // Show authentication if not authenticated
   if (!authState) {
