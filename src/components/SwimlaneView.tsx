@@ -37,7 +37,8 @@ import {
   Settings,
   Filter,
   Check,
-  FileDown
+  FileDown,
+  LogOut
 } from 'lucide-react';
 import { TrelloBoard, TrelloCard, TrelloList, CardProgress } from '@/types/trello';
 import { cn } from '@/lib/utils';
@@ -543,6 +544,18 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
               >
                 <ExternalLink className="w-4 h-4 mr-2" />
                 Open in Trello
+              </Button>
+              <Button 
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  localStorage.removeItem('trello_credentials');
+                  window.location.href = '/';
+                }}
+                className="bg-red-500/10 border-red-400/20 text-white hover:bg-red-500/20 hover:text-white"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Reconnect
               </Button>
             </div>
           </div>

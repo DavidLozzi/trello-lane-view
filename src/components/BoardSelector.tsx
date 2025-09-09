@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Trello, Users, ExternalLink } from 'lucide-react';
+import { Loader2, Trello, Users, ExternalLink, LogOut } from 'lucide-react';
 import { TrelloBoard } from '@/types/trello';
 
 interface BoardSelectorProps {
@@ -87,6 +87,18 @@ export function BoardSelector({ apiKey, token, onBoardSelected }: BoardSelectorP
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Select Your Board</h1>
           <p className="text-white/80">Choose a Trello board to visualize with swimlane layouts</p>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              localStorage.removeItem('trello_credentials');
+              window.location.href = '/';
+            }}
+            className="mt-4 text-white/80 hover:text-white hover:bg-white/10"
+          >
+            <LogOut className="w-4 h-4 mr-2" />
+            Reconnect with Different Credentials
+          </Button>
         </div>
 
         {boards.length === 0 ? (
