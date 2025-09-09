@@ -6,6 +6,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
+  Table as TableUI, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
+} from '@/components/ui/table';
+import { 
   Loader2, 
   CheckCircle, 
   Circle, 
@@ -14,7 +22,9 @@ import {
   ArrowLeft,
   Calendar,
   Tag,
-  RotateCcw
+  RotateCcw,
+  Table,
+  List
 } from 'lucide-react';
 import { TrelloBoard, TrelloCard, TrelloList, CardProgress } from '@/types/trello';
 import { cn } from '@/lib/utils';
@@ -34,6 +44,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
   const [error, setError] = useState('');
   const [sortBy, setSortBy] = useState<'progress' | 'name' | 'created'>('progress');
   const [showLastColumn, setShowLastColumn] = useState(false);
+  const [viewMode, setViewMode] = useState<'swimlane' | 'table'>('swimlane');
 
   useEffect(() => {
     loadBoardData();
@@ -313,34 +324,58 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
           </Card>
         ) : (
           <div className="space-y-4">
-            {/* Sort Controls */}
-            <div className="flex items-center gap-3 px-1">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Sort by:</span>
-                <Select value={sortBy} onValueChange={(value: 'progress' | 'name' | 'created') => setSortBy(value)}>
-                  <SelectTrigger className="w-32 h-8 text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="progress">Progress</SelectItem>
-                    <SelectItem value="name">Name (A-Z)</SelectItem>
-                    <SelectItem value="created">Created Date</SelectItem>
-                  </SelectContent>
-                </Select>
+            {/* Controls */}
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Sort by:</span>
+                  <Select value={sortBy} onValueChange={(value: 'progress' | 'name' | 'created') => setSortBy(value)}>
+                    <SelectTrigger className="w-32 h-8 text-sm">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="progress">Progress</SelectItem>
+                      <SelectItem value="name">Name (A-Z)</SelectItem>
+                      <SelectItem value="created">Created Date</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowLastColumn(!showLastColumn)}
+                  className="h-8 text-xs px-3"
+                >
+                  {showLastColumn ? 'Hide Last' : 'Show Last'}
+                </Button>
               </div>
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowLastColumn(!showLastColumn)}
-                className="h-8 text-xs px-3"
-              >
-                {showLastColumn ? 'Hide Last' : 'Show Last'}
-              </Button>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant={viewMode === 'swimlane' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('swimlane')}
+                  className="h-8 text-xs px-3"
+                >
+                  <List className="w-3 h-3 mr-1" />
+                  Swimlane
+                </Button>
+                <Button
+                  variant={viewMode === 'table' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setViewMode('table')}
+                  className="h-8 text-xs px-3"
+                >
+                  <Table className="w-3 h-3 mr-1" />
+                  Table
+                </Button>
+              </div>
             </div>
             
-            <div className="space-y-4">
-                 {getSortedCardProgresses().map((progress) => (
+            {viewMode === 'swimlane' ? (
+              <div className="space-y-4">
+                {getSortedCardProgresses().map((progress) => (
               <Card key={progress.card.id} className="shadow-card hover:shadow-elevated transition-shadow animate-fade-in">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
@@ -455,7 +490,100 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                 </CardContent>
               </Card>
             ))}
-            </div>
+              </div>
+            ) : (
+              /* Table View */
+              <div className="overflow-x-auto">
+                <TableUI>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="min-w-[200px]">Card</TableHead>
+                      {lists.map((list) => (
+                        <TableHead key={list.id} className="text-center min-w-[120px]">
+                          {list.name}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {getSortedCardProgresses().map((progress) => (
+                      <TableRow key={progress.card.id}>
+                        <TableCell className="font-medium">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold">{progress.card.name}</span>
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={() => window.open(progress.card.url, '_blank')}
+                                className="h-6 w-6 p-0"
+                              >
+                                <ExternalLink className="w-3 h-3" />
+                              </Button>
+                            </div>
+                            {progress.card.labels.length > 0 && (
+                              <div className="flex gap-1 flex-wrap">
+                                {progress.card.labels.slice(0, 2).map((label) => {
+                                  const colors = getTrelloLabelColor(label.color);
+                                  return (
+                                    <Badge 
+                                      key={label.id} 
+                                      variant="secondary" 
+                                      className="text-xs border-0 h-4 px-1"
+                                      style={{ 
+                                        backgroundColor: colors.bg,
+                                        color: colors.text
+                                      }}
+                                    >
+                                      {label.name || label.color}
+                                    </Badge>
+                                  );
+                                })}
+                                {progress.card.labels.length > 2 && (
+                                  <Badge variant="secondary" className="text-xs h-4 px-1">
+                                    +{progress.card.labels.length - 2}
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </TableCell>
+                        {lists.map((list, index) => {
+                          let status: 'completed' | 'current' | 'pending';
+                          
+                          // Check if the card is closed/checked off or in a "Done" column
+                          const isCardCompleted = progress.card.closed || progress.currentList.toLowerCase().includes('done');
+                          
+                          if (isCardCompleted && index === progress.currentListIndex) {
+                            // If card is closed/checked off, show current column as completed
+                            status = 'completed';
+                          } else if (index < progress.currentListIndex) {
+                            status = 'completed';
+                          } else if (index === progress.currentListIndex && !isCardCompleted) {
+                            status = 'current';
+                          } else {
+                            status = 'pending';
+                          }
+
+                          return (
+                            <TableCell key={list.id} className="text-center">
+                              <div 
+                                className={cn(
+                                  'w-8 h-8 rounded-full flex items-center justify-center mx-auto transition-all duration-200',
+                                  getStatusColor(status)
+                                )}
+                              >
+                                {getStatusIcon(status)}
+                              </div>
+                            </TableCell>
+                          );
+                        })}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </TableUI>
+              </div>
+            )}
           </div>
         )}
       </div>
