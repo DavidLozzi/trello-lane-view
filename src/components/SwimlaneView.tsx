@@ -498,6 +498,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                   <TableHeader>
                     <TableRow>
                       <TableHead className="min-w-[200px]">Card</TableHead>
+                      <TableHead className="min-w-[120px]">Last Activity</TableHead>
                       {lists.map((list) => (
                         <TableHead key={list.id} className="text-center min-w-[120px]">
                           {list.name}
@@ -510,17 +511,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                       <TableRow key={progress.card.id}>
                         <TableCell className="font-medium">
                           <div className="flex flex-col gap-1">
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold">{progress.card.name}</span>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => window.open(progress.card.url, '_blank')}
-                                className="h-6 w-6 p-0"
-                              >
-                                <ExternalLink className="w-3 h-3" />
-                              </Button>
-                            </div>
+                            <span className="font-semibold">{progress.card.name}</span>
                             {progress.card.labels.length > 0 && (
                               <div className="flex gap-1 flex-wrap">
                                 {progress.card.labels.slice(0, 2).map((label) => {
@@ -547,6 +538,9 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                               </div>
                             )}
                           </div>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {new Date(progress.card.dateLastActivity).toLocaleDateString()}
                         </TableCell>
                         {lists.map((list, index) => {
                           let status: 'completed' | 'current' | 'pending';
