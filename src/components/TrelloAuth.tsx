@@ -22,19 +22,15 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
       return;
     }
 
+    if (!token.trim()) {
+      setError('Please enter your access token');
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
     try {
-      // If no token provided, redirect to Trello OAuth
-      if (!token.trim()) {
-        const authUrl = `https://trello.com/1/authorize?expiration=never&scope=read&response_type=token&name=Trello%20Board%20Visualizer&key=${apiKey}&return_url=${window.location.origin}`;
-        window.open(authUrl, '_blank');
-        setError('Please complete authentication in the new window and paste your token below.');
-        setIsLoading(false);
-        return;
-      }
-
       // Test the credentials
       const response = await fetch(`https://api.trello.com/1/members/me?key=${apiKey}&token=${token}`);
       if (!response.ok) {
