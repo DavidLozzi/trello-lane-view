@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { SwimlaneView } from '@/components/SwimlaneView';
 import { TrelloAuth } from '@/components/TrelloAuth';
 import { BoardSelector } from '@/components/BoardSelector';
 import { TrelloBoard } from '@/types/trello';
+
+const STORAGE_KEY = 'trello_credentials';
 
 const Index = () => {
   const [authState, setAuthState] = useState<{
@@ -11,8 +13,25 @@ const Index = () => {
   } | null>(null);
   const [selectedBoard, setSelectedBoard] = useState<TrelloBoard | null>(null);
 
+  // Load saved credentials on component mount
+  useEffect(() => {
+    const savedCredentials = localStorage.getItem(STORAGE_KEY);
+    if (savedCredentials) {
+      try {
+        const parsed = JSON.parse(savedCredentials);
+        setAuthState(parsed);
+      } catch (error) {
+        // Clear invalid stored data
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+  }, []);
+
   const handleAuthenticated = (apiKey: string, token: string) => {
-    setAuthState({ apiKey, token });
+    const credentials = { apiKey, token };
+    setAuthState(credentials);
+    // Save credentials to localStorage
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(credentials));
   };
 
   const handleBoardSelected = (board: TrelloBoard) => {
@@ -23,6 +42,8 @@ const Index = () => {
     if (selectedBoard) {
       setSelectedBoard(null);
     } else {
+      // Clear credentials from localStorage when logging out
+      localStorage.removeItem(STORAGE_KEY);
       setAuthState(null);
     }
   };
