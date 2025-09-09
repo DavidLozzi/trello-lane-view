@@ -32,121 +32,81 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
   const [error, setError] = useState('');
 
   useEffect(() => {
-    loadMockData();
-  }, []);
+    loadBoardData();
+  }, [board.id, apiKey, token]);
 
-  const loadMockData = () => {
-    // Mock 10 columns (lists) that represent a typical product development workflow
-    const mockLists: TrelloList[] = [
-      { id: 'list-1', name: 'Backlog', pos: 1, closed: false },
-      { id: 'list-2', name: 'Planning', pos: 2, closed: false },
-      { id: 'list-3', name: 'Design', pos: 3, closed: false },
-      { id: 'list-4', name: 'Development', pos: 4, closed: false },
-      { id: 'list-5', name: 'Code Review', pos: 5, closed: false },
-      { id: 'list-6', name: 'Testing', pos: 6, closed: false },
-      { id: 'list-7', name: 'Staging', pos: 7, closed: false },
-      { id: 'list-8', name: 'UAT', pos: 8, closed: false },
-      { id: 'list-9', name: 'Ready for Release', pos: 9, closed: false },
-      { id: 'list-10', name: 'Released', pos: 10, closed: false }
-    ];
+  const loadBoardData = async () => {
+    try {
+      setIsLoading(true);
+      setError('');
 
-    // Mock 5 cards at different stages of the workflow
-    const mockCards: TrelloCard[] = [
-      {
-        id: 'card-1',
-        name: 'POP ESF',
-        desc: 'Implement secure login and registration system with JWT tokens and password hashing',
-        pos: 1,
-        due: '2024-07-15T09:00:00.000Z',
-        labels: [
-          { id: 'label-1', name: 'Backend', color: 'blue' },
-          { id: 'label-2', name: 'High Priority', color: 'red' }
-        ],
-        list: { id: 'list-6', name: 'Testing' },
-        url: 'https://trello.com/c/card-1',
-        cover: { color: 'blue', brightness: 'light' }
-      },
-      {
-        id: 'card-2',
-        name: 'MSP',
-        desc: 'Create responsive dashboard with charts and analytics for product metrics',
-        pos: 2,
-        due: '2024-07-20T17:00:00.000Z',
-        labels: [
-          { id: 'label-3', name: 'Frontend', color: 'green' },
-          { id: 'label-4', name: 'UI/UX', color: 'purple' }
-        ],
-        list: { id: 'list-4', name: 'Development' },
-        url: 'https://trello.com/c/card-2',
-        cover: { color: 'green', brightness: 'light' }
-      },
-      {
-        id: 'card-3',
-        name: 'Cyber',
-        desc: 'Integrate Stripe payment system for in-app purchases and subscriptions',
-        pos: 3,
-        due: '2024-08-01T12:00:00.000Z',
-        labels: [
-          { id: 'label-5', name: 'Mobile', color: 'orange' },
-          { id: 'label-6', name: 'Payment', color: 'yellow' },
-          { id: 'label-7', name: 'Critical', color: 'red' }
-        ],
-        list: { id: 'list-2', name: 'Planning' },
-        url: 'https://trello.com/c/card-3',
-        cover: { color: 'orange', brightness: 'light' }
-      },
-      {
-        id: 'card-4',
-        name: 'Social',
-        desc: 'Implement rate limiting and throttling for API endpoints to prevent abuse',
-        pos: 4,
-        due: null,
-        labels: [
-          { id: 'label-8', name: 'Backend', color: 'blue' },
-          { id: 'label-9', name: 'Security', color: 'black' }
-        ],
-        list: { id: 'list-9', name: 'Ready for Release' },
-        url: 'https://trello.com/c/card-4'
-      },
-      {
-        id: 'card-5',
-        name: 'HC',
-        desc: 'Design and implement guided onboarding experience for new users with interactive tutorials',
-        pos: 5,
-        due: '2024-07-25T14:30:00.000Z',
-        labels: [
-          { id: 'label-10', name: 'Frontend', color: 'green' },
-          { id: 'label-11', name: 'UX', color: 'purple' },
-          { id: 'label-12', name: 'Feature', color: 'lime' }
-        ],
-        list: { id: 'list-1', name: 'Backlog' },
-        url: 'https://trello.com/c/card-5',
-        cover: { color: 'purple', brightness: 'light' }
+      // Fetch lists from the selected board
+      const listsResponse = await fetch(
+        `https://api.trello.com/1/boards/${board.id}/lists?key=${apiKey}&token=${token}&filter=open&fields=id,name,pos,closed`
+      );
+      
+      if (!listsResponse.ok) {
+        throw new Error('Failed to fetch board lists');
       }
-    ];
 
-    setLists(mockLists);
-    setCards(mockCards);
+      const listsData: TrelloList[] = await listsResponse.json();
+      
+      // Fetch cards from the selected board
+      const cardsResponse = await fetch(
+        `https://api.trello.com/1/boards/${board.id}/cards?key=${apiKey}&token=${token}&fields=id,name,desc,pos,due,labels,idList,url,cover&list=true`
+      );
+      
+      if (!cardsResponse.ok) {
+        throw new Error('Failed to fetch board cards');
+      }
 
-    // Calculate progress for each card
-    const progresses = mockCards.map((card: TrelloCard) => {
-      const currentListIndex = mockLists.findIndex((list: TrelloList) => list.id === card.list.id);
-      const completedLists = mockLists.slice(0, currentListIndex).map((list: TrelloList) => list.name);
-      const currentList = mockLists[currentListIndex]?.name || '';
-      const remainingLists = mockLists.slice(currentListIndex + 1).map((list: TrelloList) => list.name);
+      const cardsData: any[] = await cardsResponse.json();
+      
+      // Transform cards to match our interface
+      const transformedCards: TrelloCard[] = cardsData.map(card => ({
+        id: card.id,
+        name: card.name,
+        desc: card.desc || '',
+        pos: card.pos,
+        due: card.due,
+        labels: card.labels || [],
+        list: {
+          id: card.idList,
+          name: card.list?.name || ''
+        },
+        url: card.url,
+        cover: card.cover
+      }));
 
-      return {
-        card,
-        currentListIndex,
-        totalLists: mockLists.length,
-        completedLists,
-        currentList,
-        remainingLists
-      };
-    });
+      // Sort lists by position
+      const sortedLists = listsData.sort((a, b) => a.pos - b.pos);
+      
+      setLists(sortedLists);
+      setCards(transformedCards);
 
-    setCardProgresses(progresses);
-    setIsLoading(false);
+      // Calculate progress for each card
+      const progresses = transformedCards.map((card: TrelloCard) => {
+        const currentListIndex = sortedLists.findIndex((list: TrelloList) => list.id === card.list.id);
+        const completedLists = sortedLists.slice(0, currentListIndex).map((list: TrelloList) => list.name);
+        const currentList = sortedLists[currentListIndex]?.name || '';
+        const remainingLists = sortedLists.slice(currentListIndex + 1).map((list: TrelloList) => list.name);
+
+        return {
+          card,
+          currentListIndex: currentListIndex >= 0 ? currentListIndex : 0,
+          totalLists: sortedLists.length,
+          completedLists,
+          currentList,
+          remainingLists
+        };
+      });
+
+      setCardProgresses(progresses);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load board data');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getStatusColor = (status: 'completed' | 'current' | 'pending') => {
