@@ -246,23 +246,34 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-white shadow-soft">
-        <div className="max-w-7xl mx-auto px-4 py-4">
+      {/* Header with Board Background */}
+      <div 
+        className="border-b shadow-soft relative overflow-hidden"
+        style={{
+          backgroundColor: board.prefs.backgroundColor || '#0079bf',
+          backgroundImage: board.prefs.background ? `url(${board.prefs.background})` : undefined,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        {/* Overlay for better text readability */}
+        <div className="absolute inset-0 bg-black/20"></div>
+        <div className="max-w-7xl mx-auto px-4 py-4 relative z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button 
                 variant="ghost" 
                 size="sm"
                 onClick={onBack}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-white/90 hover:text-white hover:bg-white/10"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Boards
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-foreground">{board.name}</h1>
-                <p className="text-sm text-muted-foreground">
+                <h1 className="text-2xl font-bold text-white drop-shadow-sm">{board.name}</h1>
+                <p className="text-sm text-white/80">
                   {cardProgresses.length} cards • {lists.length} columns
                 </p>
               </div>
@@ -273,7 +284,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                 size="sm"
                 onClick={loadBoardData}
                 disabled={isLoading}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
               >
                 <RotateCcw className={cn("w-4 h-4", isLoading && "animate-spin")} />
                 Refresh
@@ -282,6 +293,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                 variant="outline"
                 size="sm"
                 onClick={() => window.open(board.url, '_blank')}
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
               >
                 <ExternalLink className="w-4 h-4 mr-2" />
                 Open in Trello
