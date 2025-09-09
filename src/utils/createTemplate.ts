@@ -74,10 +74,16 @@ export const createTemplate = async () => {
       { text: 'Labels', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } }
     ],
     [
-      { text: '{{SAMPLE_CARD}}', options: { fontFace: 'Calibri' } },
-      { text: '{{SAMPLE_STATUS}}', options: { fontFace: 'Calibri' } },
-      { text: '{{SAMPLE_PROGRESS}}', options: { fontFace: 'Calibri' } },
-      { text: '{{SAMPLE_LABELS}}', options: { fontFace: 'Calibri' } }
+      { text: 'Sample Card Name', options: { fontFace: 'Calibri' } },
+      { text: 'In Progress', options: { fontFace: 'Calibri' } },
+      { text: '75%', options: { fontFace: 'Calibri' } },
+      { text: 'Feature, Priority', options: { fontFace: 'Calibri' } }
+    ],
+    [
+      { text: 'Another Card', options: { fontFace: 'Calibri' } },
+      { text: 'Done', options: { fontFace: 'Calibri' } },
+      { text: '100%', options: { fontFace: 'Calibri' } },
+      { text: 'Bug Fix', options: { fontFace: 'Calibri' } }
     ]
   ];
   
@@ -126,3 +132,7 @@ export const createTemplate = async () => {
   await pptx.writeFile({ fileName: 'swimlane_template.pptx' });
   console.log('Template created successfully');
 };
+
+// Call this function to generate the template file
+// You can run this in the browser console: 
+// import('./utils/createTemplate').then(m => m.createTemplate())
