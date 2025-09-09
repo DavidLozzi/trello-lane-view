@@ -71,7 +71,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
           
           try {
             const actionsResponse = await fetch(
-              `https://api.trello.com/1/cards/${card.id}/actions?key=${apiKey}&token=${token}&filter=updateCard&limit=50`
+              `https://api.trello.com/1/cards/${card.id}/actions?key=${apiKey}&token=${token}&filter=updateCard:idList&limit=10`
             );
             
             if (actionsResponse.ok) {
@@ -79,12 +79,14 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
               
               // Find the most recent action that moved the card to its current list
               const moveAction = actions.find((action: any) => 
-                action.data?.listAfter?.id === card.idList ||
-                (action.data?.card?.idList === card.idList && action.data?.old?.idList !== card.idList)
+                action.data?.listAfter?.id === card.idList
               );
               
               if (moveAction) {
                 movedToCurrentListDate = moveAction.date;
+              } else if (actions.length > 0) {
+                // If no specific move found, use the most recent action date
+                movedToCurrentListDate = actions[0].date;
               }
             }
           } catch (error) {
@@ -261,11 +263,9 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                        </CardTitle>
                        <p className="text-xs text-muted-foreground mt-1">
                          Created: {getCardCreationDate(progress.card.id).toLocaleDateString()}
-                         {progress.card.movedToCurrentListDate && (
-                           <span className="ml-3">
-                             Moved to {progress.currentList}: {new Date(progress.card.movedToCurrentListDate).toLocaleDateString()}
-                           </span>
-                         )}
+                         <span className="ml-3">
+                           Last Activity: {new Date(progress.card.dateLastActivity).toLocaleDateString()}
+                         </span>
                        </p>
                        {progress.card.desc && (
                          <CardDescription className="mt-1 text-sm line-clamp-2">
