@@ -417,63 +417,34 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                       Filter Labels
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-48">
-                    <DropdownMenuLabel>Filter by Labels</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {Array.from(new Map(cardProgresses.flatMap(progress => progress.card.labels).map(label => [label.id, label])).values()).map((label) => {
-                      const colors = getTrelloLabelColor(label.color);
-                      const allLabelIds = Array.from(new Map(cardProgresses.flatMap(progress => progress.card.labels).map(l => [l.id, l])).keys());
-                      
-                      return (
-                        <div key={label.id} className="flex items-center justify-between px-2 py-1 hover:bg-accent rounded-sm">
-                          <DropdownMenuCheckboxItem
-                            checked={visibleLabels.includes(label.id)}
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                setVisibleLabels([...visibleLabels, label.id]);
-                              } else {
-                                setVisibleLabels(visibleLabels.filter(id => id !== label.id));
-                              }
-                            }}
-                            className="flex-1 m-0"
-                          >
-                            <div className="flex items-center gap-2">
-                              <div 
-                                className="w-3 h-3 rounded-sm"
-                                style={{ backgroundColor: colors.bg }}
-                              />
-                              {label.name || label.color}
-                            </div>
-                          </DropdownMenuCheckboxItem>
-                          <div className="flex gap-1 ml-2">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-5 w-5 p-0 text-xs hover:bg-primary hover:text-primary-foreground"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setVisibleLabels([label.id]);
-                              }}
-                              title="Only this"
-                            >
-                              1
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-5 w-5 p-0 text-xs hover:bg-destructive hover:text-destructive-foreground"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setVisibleLabels(allLabelIds.filter(id => id !== label.id));
-                              }}
-                              title="All except this"
-                            >
-                              ×
-                            </Button>
-                          </div>
-                        </div>
-                      );
-                    })}
+                   <DropdownMenuContent align="start" className="w-64">
+                     <DropdownMenuLabel>Filter by Labels</DropdownMenuLabel>
+                     <DropdownMenuSeparator />
+                     {Array.from(new Map(cardProgresses.flatMap(progress => progress.card.labels).map(label => [label.id, label])).values()).map((label) => {
+                       const colors = getTrelloLabelColor(label.color);
+                       
+                       return (
+                         <DropdownMenuCheckboxItem
+                           key={label.id}
+                           checked={visibleLabels.includes(label.id)}
+                           onCheckedChange={(checked) => {
+                             if (checked) {
+                               setVisibleLabels([...visibleLabels, label.id]);
+                             } else {
+                               setVisibleLabels(visibleLabels.filter(id => id !== label.id));
+                             }
+                           }}
+                         >
+                           <div className="flex items-center gap-2">
+                             <div 
+                               className="w-4 h-4 rounded-sm flex-shrink-0"
+                               style={{ backgroundColor: colors.bg }}
+                             />
+                             <span className="truncate">{label.name || label.color}</span>
+                           </div>
+                         </DropdownMenuCheckboxItem>
+                       );
+                     })}
                   </DropdownMenuContent>
                 </DropdownMenu>
                 
