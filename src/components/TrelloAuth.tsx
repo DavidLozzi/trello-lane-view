@@ -69,16 +69,17 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
               className="transition-all duration-200 focus:ring-2 focus:ring-trello-primary"
             />
             <p className="text-sm text-muted-foreground">
-              Get your API key from{' '}
+              First create a Power-Up at{' '}
               <a 
-                href="https://trello.com/1/appKey/generate" 
+                href="https://trello.com/power-ups/admin" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-trello-primary hover:underline inline-flex items-center gap-1"
               >
-                trello.com/1/appKey/generate
+                trello.com/power-ups/admin
                 <ExternalLink className="w-3 h-3" />
               </a>
+              , then get your API key from the API key tab
             </p>
           </div>
 
@@ -93,17 +94,7 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
               className="transition-all duration-200 focus:ring-2 focus:ring-trello-primary"
             />
             <p className="text-sm text-muted-foreground">
-              After getting your API key, visit{' '}
-              <a 
-                href={`https://trello.com/1/authorize?expiration=never&scope=read&response_type=token&name=Trello%20Visualizer&key=${apiKey || 'YOUR_API_KEY'}`}
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-trello-primary hover:underline inline-flex items-center gap-1"
-              >
-                this authorization link
-                <ExternalLink className="w-3 h-3" />
-              </a>
-              {!apiKey && ' (enter API key first)'}
+              In your Power-Up's API key tab, click the "Token" link to get your access token
             </p>
           </div>
 
