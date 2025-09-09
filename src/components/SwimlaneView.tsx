@@ -536,17 +536,6 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                 Export to PPTX
               </Button>
               <Button 
-                variant="ghost"
-                size="sm"
-                onClick={async () => {
-                  const { createTemplate } = await import('../utils/createTemplate');
-                  await createTemplate();
-                }}
-                className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white text-xs"
-              >
-                Download Template
-              </Button>
-              <Button 
                 variant="outline"
                 size="sm"
                 onClick={() => window.open(board.url, '_blank')}
