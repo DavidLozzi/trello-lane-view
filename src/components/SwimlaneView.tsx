@@ -228,8 +228,11 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
   const getSortedCardProgresses = () => {
     let filtered = [...cardProgresses];
     
-    // Filter out last column cards if showLastColumn is false
-    if (!showLastColumn && lists.length > 0) {
+    // Filter out cards that are in hidden columns
+    filtered = filtered.filter(progress => visibleColumns.includes(progress.card.list.id));
+    
+    // Filter out last column cards if showLastColumn is false (only for swimlane view)
+    if (viewMode === 'swimlane' && !showLastColumn && lists.length > 0) {
       const lastListIndex = lists.length - 1;
       filtered = filtered.filter(progress => progress.currentListIndex !== lastListIndex);
     }
