@@ -63,22 +63,52 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
 
       const cardsData: any[] = await cardsResponse.json();
       
-      // Transform cards to match our interface
-      const transformedCards: TrelloCard[] = cardsData.map(card => ({
-        id: card.id,
-        name: card.name,
-        desc: card.desc || '',
-        pos: card.pos,
-        due: card.due,
-        dateLastActivity: card.dateLastActivity,
-        labels: card.labels || [],
-        list: {
-          id: card.idList,
-          name: card.list?.name || ''
-        },
-        url: card.url,
-        cover: card.cover
-      }));
+      // Transform cards to match our interface and fetch move dates
+      const transformedCards: TrelloCard[] = await Promise.all(
+        cardsData.map(async (card) => {
+          // Get the date when card was moved to current list
+          let movedToCurrentListDate: string | undefined;
+          
+          try {
+            const actionsResponse = await fetch(
+              `https://api.trello.com/1/cards/${card.id}/actions?key=${apiKey}&token=${token}&filter=updateCard&limit=50`
+            );
+            
+            if (actionsResponse.ok) {
+              const actions = await actionsResponse.json();
+              
+              // Find the most recent action that moved the card to its current list
+              const moveAction = actions.find((action: any) => 
+                action.data?.listAfter?.id === card.idList ||
+                (action.data?.card?.idList === card.idList && action.data?.old?.idList !== card.idList)
+              );
+              
+              if (moveAction) {
+                movedToCurrentListDate = moveAction.date;
+              }
+            }
+          } catch (error) {
+            console.warn(`Failed to fetch actions for card ${card.id}:`, error);
+          }
+
+          return {
+            id: card.id,
+            name: card.name,
+            desc: card.desc || '',
+            pos: card.pos,
+            due: card.due,
+            dateLastActivity: card.dateLastActivity,
+            movedToCurrentListDate,
+            labels: card.labels || [],
+            list: {
+              id: card.idList,
+              name: card.list?.name || ''
+            },
+            url: card.url,
+            cover: card.cover
+          };
+        })
+      );
 
       // Sort lists by position
       const sortedLists = listsData.sort((a, b) => a.pos - b.pos);
@@ -231,6 +261,11 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                        </CardTitle>
                        <p className="text-xs text-muted-foreground mt-1">
                          Created: {getCardCreationDate(progress.card.id).toLocaleDateString()}
+                         {progress.card.movedToCurrentListDate && (
+                           <span className="ml-3">
+                             Moved to {progress.currentList}: {new Date(progress.card.movedToCurrentListDate).toLocaleDateString()}
+                           </span>
+                         )}
                        </p>
                        {progress.card.desc && (
                          <CardDescription className="mt-1 text-sm line-clamp-2">

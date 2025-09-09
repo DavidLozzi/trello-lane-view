@@ -23,6 +23,7 @@ export interface TrelloCard {
   pos: number;
   due: string | null;
   dateLastActivity: string;
+  movedToCurrentListDate?: string;
   labels: TrelloLabel[];
   list: {
     id: string;
