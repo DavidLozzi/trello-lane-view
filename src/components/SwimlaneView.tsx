@@ -330,16 +330,22 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
 
                   {/* Column Status */}
                   <div className="flex flex-wrap gap-2">
-                    {lists.map((list, index) => {
-                      let status: 'completed' | 'current' | 'pending';
-                      
-                      if (index < progress.currentListIndex) {
-                        status = 'completed';
-                      } else if (index === progress.currentListIndex) {
-                        status = 'current';
-                      } else {
-                        status = 'pending';
-                      }
+                     {lists.map((list, index) => {
+                       let status: 'completed' | 'current' | 'pending';
+                       
+                       // Check if the card is in a "Done" column (case insensitive)
+                       const isCardInDoneColumn = progress.currentList.toLowerCase().includes('done');
+                       
+                       if (isCardInDoneColumn && index === progress.currentListIndex) {
+                         // If card is in a Done column, show it as completed
+                         status = 'completed';
+                       } else if (index < progress.currentListIndex) {
+                         status = 'completed';
+                       } else if (index === progress.currentListIndex) {
+                         status = 'current';
+                       } else {
+                         status = 'pending';
+                       }
 
                       return (
                         <Badge
