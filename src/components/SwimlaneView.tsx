@@ -227,8 +227,11 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
   const getSortedCardProgresses = () => {
     let filtered = [...cardProgresses];
     
-    // Filter out cards that are in hidden columns
-    filtered = filtered.filter(progress => visibleColumns.includes(progress.card.list.id));
+    // For table view: filter out cards that are in hidden columns
+    // For swimlane view: don't filter cards, they'll be handled in rendering
+    if (viewMode === 'table') {
+      filtered = filtered.filter(progress => visibleColumns.includes(progress.card.list.id));
+    }
     
     switch (sortBy) {
       case 'progress':
@@ -410,7 +413,9 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
             
             {viewMode === 'swimlane' ? (
               <div className="space-y-4">
-                {getSortedCardProgresses().map((progress) => (
+                {getSortedCardProgresses()
+                  .filter(progress => visibleColumns.includes(progress.card.list.id))
+                  .map((progress) => (
               <Card key={progress.card.id} className="shadow-card hover:shadow-elevated transition-shadow animate-fade-in">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
@@ -491,8 +496,8 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
 
                   {/* Column Status */}
                    <div className="flex flex-wrap gap-2">
-                      {lists.filter(list => visibleColumns.includes(list.id)).map((list, index) => {
-                        const originalIndex = lists.findIndex(l => l.id === list.id);
+                      {lists.map((list, index) => {
+                        const originalIndex = index;
                        let status: 'completed' | 'current' | 'pending';
                        
                        // Check if the card is closed/checked off or in a "Done" column
