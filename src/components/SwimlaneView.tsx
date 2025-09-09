@@ -179,6 +179,24 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
     }
   };
 
+  // Function to get softer Trello label colors
+  const getTrelloLabelColor = (color: string) => {
+    const trelloColors: Record<string, { bg: string; text: string }> = {
+      'green': { bg: 'hsl(122, 39%, 85%)', text: 'hsl(122, 39%, 25%)' },
+      'yellow': { bg: 'hsl(54, 70%, 85%)', text: 'hsl(54, 70%, 25%)' },
+      'orange': { bg: 'hsl(25, 85%, 85%)', text: 'hsl(25, 85%, 25%)' },
+      'red': { bg: 'hsl(0, 65%, 85%)', text: 'hsl(0, 65%, 25%)' },
+      'purple': { bg: 'hsl(271, 36%, 85%)', text: 'hsl(271, 36%, 25%)' },
+      'blue': { bg: 'hsl(211, 60%, 85%)', text: 'hsl(211, 60%, 25%)' },
+      'sky': { bg: 'hsl(197, 71%, 85%)', text: 'hsl(197, 71%, 25%)' },
+      'lime': { bg: 'hsl(84, 69%, 85%)', text: 'hsl(84, 69%, 25%)' },
+      'pink': { bg: 'hsl(314, 44%, 85%)', text: 'hsl(314, 44%, 25%)' },
+      'black': { bg: 'hsl(220, 9%, 85%)', text: 'hsl(220, 9%, 25%)' },
+    };
+    
+    return trelloColors[color] || { bg: 'hsl(var(--muted))', text: 'hsl(var(--muted-foreground))' };
+  };
+
   // Sorting function
   const getSortedCardProgresses = () => {
     let filtered = [...cardProgresses];
@@ -331,18 +349,24 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                        )}
                       <div className="flex items-center gap-2 mt-2">
                         {progress.card.labels.length > 0 && (
-                          <div className="flex gap-1">
-                            {progress.card.labels.slice(0, 3).map((label) => (
-                              <Badge 
-                                key={label.id} 
-                                variant="secondary" 
-                                className="text-xs"
-                                style={{ backgroundColor: `var(--label-${label.color}, hsl(var(--muted)))` }}
-                              >
-                                <Tag className="w-3 h-3 mr-1" />
-                                {label.name || label.color}
-                              </Badge>
-                            ))}
+                           <div className="flex gap-1">
+                             {progress.card.labels.slice(0, 3).map((label) => {
+                               const colors = getTrelloLabelColor(label.color);
+                               return (
+                                 <Badge 
+                                   key={label.id} 
+                                   variant="secondary" 
+                                   className="text-xs border-0"
+                                   style={{ 
+                                     backgroundColor: colors.bg,
+                                     color: colors.text
+                                   }}
+                                 >
+                                   <Tag className="w-3 h-3 mr-1" />
+                                   {label.name || label.color}
+                                 </Badge>
+                               );
+                             })}
                             {progress.card.labels.length > 3 && (
                               <Badge variant="secondary" className="text-xs">
                                 +{progress.card.labels.length - 3}
