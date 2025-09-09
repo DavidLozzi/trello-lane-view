@@ -357,39 +357,37 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                   </Select>
                 </div>
                 
-                {viewMode === 'table' && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 text-xs px-3"
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs px-3"
+                    >
+                      <Settings className="w-3 h-3 mr-1" />
+                      Columns
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48">
+                    <DropdownMenuLabel>Show Columns</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {lists.map((list) => (
+                      <DropdownMenuCheckboxItem
+                        key={list.id}
+                        checked={visibleColumns.includes(list.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setVisibleColumns([...visibleColumns, list.id]);
+                          } else {
+                            setVisibleColumns(visibleColumns.filter(id => id !== list.id));
+                          }
+                        }}
                       >
-                        <Settings className="w-3 h-3 mr-1" />
-                        Columns
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-48">
-                      <DropdownMenuLabel>Show Columns</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      {lists.map((list) => (
-                        <DropdownMenuCheckboxItem
-                          key={list.id}
-                          checked={visibleColumns.includes(list.id)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setVisibleColumns([...visibleColumns, list.id]);
-                            } else {
-                              setVisibleColumns(visibleColumns.filter(id => id !== list.id));
-                            }
-                          }}
-                        >
-                          {list.name}
-                        </DropdownMenuCheckboxItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
+                        {list.name}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 
                 {viewMode === 'swimlane' && (
                   <Button
@@ -507,20 +505,21 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                   </div>
 
                   {/* Column Status */}
-                  <div className="flex flex-wrap gap-2">
-                     {lists.map((list, index) => {
+                   <div className="flex flex-wrap gap-2">
+                      {lists.filter(list => visibleColumns.includes(list.id)).map((list, index) => {
+                        const originalIndex = lists.findIndex(l => l.id === list.id);
                        let status: 'completed' | 'current' | 'pending';
                        
                        // Check if the card is closed/checked off or in a "Done" column
                        const isCardCompleted = progress.card.closed || progress.currentList.toLowerCase().includes('done');
                        
-                       if (isCardCompleted && index === progress.currentListIndex) {
-                         // If card is closed/checked off, show current column as completed
-                         status = 'completed';
-                       } else if (index < progress.currentListIndex) {
-                         status = 'completed';
-                       } else if (index === progress.currentListIndex && !isCardCompleted) {
-                         status = 'current';
+                        if (isCardCompleted && originalIndex === progress.currentListIndex) {
+                          // If card is closed/checked off, show current column as completed
+                          status = 'completed';
+                        } else if (originalIndex < progress.currentListIndex) {
+                          status = 'completed';
+                        } else if (originalIndex === progress.currentListIndex && !isCardCompleted) {
+                          status = 'current';
                        } else {
                          status = 'pending';
                        }
