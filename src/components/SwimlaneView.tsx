@@ -14,6 +14,14 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator
+} from '@/components/ui/dropdown-menu';
+import { 
   Loader2, 
   CheckCircle, 
   Circle, 
@@ -24,7 +32,9 @@ import {
   Tag,
   RotateCcw,
   Table,
-  List
+  List,
+  Settings,
+  Check
 } from 'lucide-react';
 import { TrelloBoard, TrelloCard, TrelloList, CardProgress } from '@/types/trello';
 import { cn } from '@/lib/utils';
@@ -45,6 +55,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
   const [sortBy, setSortBy] = useState<'progress' | 'name' | 'created'>('progress');
   const [showLastColumn, setShowLastColumn] = useState(false);
   const [viewMode, setViewMode] = useState<'swimlane' | 'table'>('swimlane');
+  const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
 
   useEffect(() => {
     loadBoardData();
@@ -132,6 +143,11 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
       
       setLists(sortedLists);
       setCards(transformedCards);
+      
+      // Initialize visible columns (show all by default)
+      if (visibleColumns.length === 0) {
+        setVisibleColumns(sortedLists.map(list => list.id));
+      }
 
       // Calculate progress for each card
       const progresses = transformedCards.map((card: TrelloCard) => {
@@ -341,14 +357,50 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                   </Select>
                 </div>
                 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowLastColumn(!showLastColumn)}
-                  className="h-8 text-xs px-3"
-                >
-                  {showLastColumn ? 'Hide Last' : 'Show Last'}
-                </Button>
+                {viewMode === 'table' && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs px-3"
+                      >
+                        <Settings className="w-3 h-3 mr-1" />
+                        Columns
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-48">
+                      <DropdownMenuLabel>Show Columns</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {lists.map((list) => (
+                        <DropdownMenuCheckboxItem
+                          key={list.id}
+                          checked={visibleColumns.includes(list.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setVisibleColumns([...visibleColumns, list.id]);
+                            } else {
+                              setVisibleColumns(visibleColumns.filter(id => id !== list.id));
+                            }
+                          }}
+                        >
+                          {list.name}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
+                
+                {viewMode === 'swimlane' && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowLastColumn(!showLastColumn)}
+                    className="h-8 text-xs px-3"
+                  >
+                    {showLastColumn ? 'Hide Last' : 'Show Last'}
+                  </Button>
+                )}
               </div>
 
               <div className="flex items-center gap-2">
@@ -499,7 +551,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                     <TableRow>
                       <TableHead className="min-w-[200px]">Card</TableHead>
                       <TableHead className="min-w-[120px]">Last Activity</TableHead>
-                      {lists.map((list) => (
+                      {lists.filter(list => visibleColumns.includes(list.id)).map((list) => (
                         <TableHead key={list.id} className="text-center min-w-[120px]">
                           {list.name}
                         </TableHead>
@@ -542,18 +594,19 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                         <TableCell className="text-sm text-muted-foreground">
                           {new Date(progress.card.dateLastActivity).toLocaleDateString()}
                         </TableCell>
-                        {lists.map((list, index) => {
+                        {lists.filter(list => visibleColumns.includes(list.id)).map((list, index) => {
+                          const originalIndex = lists.findIndex(l => l.id === list.id);
                           let status: 'completed' | 'current' | 'pending';
                           
                           // Check if the card is closed/checked off or in a "Done" column
                           const isCardCompleted = progress.card.closed || progress.currentList.toLowerCase().includes('done');
                           
-                          if (isCardCompleted && index === progress.currentListIndex) {
+                          if (isCardCompleted && originalIndex === progress.currentListIndex) {
                             // If card is closed/checked off, show current column as completed
                             status = 'completed';
-                          } else if (index < progress.currentListIndex) {
+                          } else if (originalIndex < progress.currentListIndex) {
                             status = 'completed';
-                          } else if (index === progress.currentListIndex && !isCardCompleted) {
+                          } else if (originalIndex === progress.currentListIndex && !isCardCompleted) {
                             status = 'current';
                           } else {
                             status = 'pending';
