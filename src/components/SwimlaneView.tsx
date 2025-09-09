@@ -54,7 +54,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
       
       // Fetch cards from the selected board
       const cardsResponse = await fetch(
-        `https://api.trello.com/1/boards/${board.id}/cards?key=${apiKey}&token=${token}&fields=id,name,desc,pos,due,labels,idList,url,cover&list=true`
+        `https://api.trello.com/1/boards/${board.id}/cards?key=${apiKey}&token=${token}&fields=id,name,desc,pos,due,dateLastActivity,labels,idList,url,cover&list=true`
       );
       
       if (!cardsResponse.ok) {
@@ -70,6 +70,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
         desc: card.desc || '',
         pos: card.pos,
         due: card.due,
+        dateLastActivity: card.dateLastActivity,
         labels: card.labels || [],
         list: {
           id: card.idList,
@@ -108,6 +109,14 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Helper function to extract creation date from Trello card ID
+  // Helper function to extract creation date from Trello card ID
+  const getCardCreationDate = (cardId: string) => {
+    // First 8 characters of Trello card ID are hex timestamp
+    const timestamp = parseInt(cardId.substring(0, 8), 16);
+    return new Date(timestamp * 1000);
   };
 
   const getStatusColor = (status: 'completed' | 'current' | 'pending') => {
@@ -217,14 +226,17 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
-                      <CardTitle className="text-lg font-semibold text-foreground truncate">
-                        {progress.card.name}
-                      </CardTitle>
-                      {progress.card.desc && (
-                        <CardDescription className="mt-1 text-sm line-clamp-2">
-                          {progress.card.desc}
-                        </CardDescription>
-                      )}
+                       <CardTitle className="text-lg font-semibold text-foreground truncate">
+                         {progress.card.name}
+                       </CardTitle>
+                       <p className="text-xs text-muted-foreground mt-1">
+                         Created: {getCardCreationDate(progress.card.id).toLocaleDateString()}
+                       </p>
+                       {progress.card.desc && (
+                         <CardDescription className="mt-1 text-sm line-clamp-2">
+                           {progress.card.desc}
+                         </CardDescription>
+                       )}
                       <div className="flex items-center gap-2 mt-2">
                         {progress.card.labels.length > 0 && (
                           <div className="flex gap-1">
