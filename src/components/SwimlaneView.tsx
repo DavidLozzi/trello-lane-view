@@ -12,7 +12,8 @@ import {
   ExternalLink, 
   ArrowLeft,
   Calendar,
-  Tag
+  Tag,
+  RotateCcw
 } from 'lucide-react';
 import { TrelloBoard, TrelloCard, TrelloList, CardProgress } from '@/types/trello';
 import { cn } from '@/lib/utils';
@@ -177,14 +178,26 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                 </p>
               </div>
             </div>
-            <Button 
-              variant="outline"
-              size="sm"
-              onClick={() => window.open(board.url, '_blank')}
-            >
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Open in Trello
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={loadBoardData}
+                disabled={isLoading}
+                className="flex items-center gap-2"
+              >
+                <RotateCcw className={cn("w-4 h-4", isLoading && "animate-spin")} />
+                Refresh
+              </Button>
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => window.open(board.url, '_blank')}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Open in Trello
+              </Button>
+            </div>
           </div>
         </div>
       </div>
