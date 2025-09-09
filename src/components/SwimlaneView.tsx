@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import PptxGenJS from 'pptxgenjs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -35,7 +36,8 @@ import {
   List,
   Settings,
   Filter,
-  Check
+  Check,
+  FileDown
 } from 'lucide-react';
 import { TrelloBoard, TrelloCard, TrelloList, CardProgress } from '@/types/trello';
 import { cn } from '@/lib/utils';
@@ -267,6 +269,83 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
     }
   };
 
+  
+  const exportToPPTX = async () => {
+    const pptx = new PptxGenJS();
+    const slide = pptx.addSlide();
+    
+    // Add title
+    slide.addText(board.name, {
+      x: 0.5,
+      y: 0.3,
+      w: 9,
+      h: 0.7,
+      fontSize: 24,
+      bold: true,
+      color: '000000',
+      align: 'center'
+    });
+    
+    // Add subtitle
+    slide.addText(`${getSortedCardProgresses().length} cards • ${lists.length} columns`, {
+      x: 0.5,
+      y: 1,
+      w: 9,
+      h: 0.4,
+      fontSize: 14,
+      color: '666666',
+      align: 'center'
+    });
+    
+    // Create table data for the swimlane view
+    const tableData: any[][] = [];
+    
+    // Header row
+    tableData.push([
+      { text: 'Card', options: { bold: true, fill: '4A90E2', color: 'FFFFFF' } },
+      { text: 'Current Status', options: { bold: true, fill: '4A90E2', color: 'FFFFFF' } },
+      { text: 'Progress', options: { bold: true, fill: '4A90E2', color: 'FFFFFF' } },
+      { text: 'Labels', options: { bold: true, fill: '4A90E2', color: 'FFFFFF' } }
+    ]);
+    
+    // Data rows
+    getSortedCardProgresses().forEach(progress => {
+      const progressPercentage = Math.round((progress.currentListIndex / (progress.totalLists - 1)) * 100);
+      const labelsText = progress.card.labels.map(label => label.name || label.color).join(', ') || 'None';
+      
+      tableData.push([
+        { text: progress.card.name },
+        { text: progress.currentList },
+        { text: `${progressPercentage}%` },
+        { text: labelsText }
+      ]);
+    });
+    
+    // Add table to slide
+    slide.addTable(tableData, {
+      x: 0.5,
+      y: 2,
+      w: 9,
+      fontSize: 11,
+      border: { pt: 1, color: 'CCCCCC' },
+      rowH: 0.4
+    });
+    
+    // Add timestamp
+    slide.addText(`Exported on ${new Date().toLocaleDateString()}`, {
+      x: 0.5,
+      y: 7,
+      w: 9,
+      h: 0.3,
+      fontSize: 10,
+      color: '999999',
+      align: 'center'
+    });
+    
+    // Save the presentation
+    await pptx.writeFile({ fileName: `${board.name}_Swimlane_Export.pptx` });
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -332,6 +411,15 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
               >
                 <RotateCcw className={cn("w-4 h-4", isLoading && "animate-spin")} />
                 Refresh
+              </Button>
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={exportToPPTX}
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
+              >
+                <FileDown className="w-4 h-4 mr-2" />
+                Export to PPTX
               </Button>
               <Button 
                 variant="outline"
