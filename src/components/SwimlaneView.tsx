@@ -374,49 +374,51 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                   </Select>
                 </div>
                 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 text-xs px-3"
-                    >
-                      <Filter className="w-3 h-3 mr-1" />
-                      Filter Status
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-48">
-                    <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {lists.map((list) => (
-                      <DropdownMenuCheckboxItem
-                        key={list.id}
-                        checked={visibleCardColumns.includes(list.id)}
-                        onCheckedChange={(checked) => {
-                          if (checked) {
-                            setVisibleCardColumns([...visibleCardColumns, list.id]);
-                          } else {
-                            setVisibleCardColumns(visibleCardColumns.filter(id => id !== list.id));
-                          }
-                        }}
+                <div className="flex items-center gap-2">
+                  <Filter className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">Filter By:</span>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs px-3"
                       >
-                        {list.name}
-                      </DropdownMenuCheckboxItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8 text-xs px-3"
-                    >
-                      <Filter className="w-3 h-3 mr-1" />
-                      Filter Labels
-                    </Button>
-                  </DropdownMenuTrigger>
+                        Status
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-48">
+                      <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {lists.map((list) => (
+                        <DropdownMenuCheckboxItem
+                          key={list.id}
+                          checked={visibleCardColumns.includes(list.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setVisibleCardColumns([...visibleCardColumns, list.id]);
+                            } else {
+                              setVisibleCardColumns(visibleCardColumns.filter(id => id !== list.id));
+                            }
+                          }}
+                        >
+                          {list.name}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs px-3"
+                      >
+                        Label
+                      </Button>
+                    </DropdownMenuTrigger>
                    <DropdownMenuContent align="start" className="w-64">
                      <div className="flex items-center justify-between px-2 py-1.5">
                        <DropdownMenuLabel className="p-0">Filter by Labels</DropdownMenuLabel>
@@ -475,10 +477,11 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                          </div>
                        );
                      })}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-                
-                {viewMode === 'table' && (
+                   </DropdownMenuContent>
+                 </DropdownMenu>
+                </div>
+                 
+                 {viewMode === 'table' && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
