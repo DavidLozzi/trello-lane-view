@@ -33,6 +33,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [sortBy, setSortBy] = useState<'progress' | 'name' | 'created'>('progress');
+  const [showLastColumn, setShowLastColumn] = useState(false);
 
   useEffect(() => {
     loadBoardData();
@@ -180,21 +181,27 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
 
   // Sorting function
   const getSortedCardProgresses = () => {
-    const sorted = [...cardProgresses];
+    let filtered = [...cardProgresses];
+    
+    // Filter out last column cards if showLastColumn is false
+    if (!showLastColumn && lists.length > 0) {
+      const lastListIndex = lists.length - 1;
+      filtered = filtered.filter(progress => progress.currentListIndex !== lastListIndex);
+    }
     
     switch (sortBy) {
       case 'progress':
-        return sorted.sort((a, b) => a.currentListIndex - b.currentListIndex);
+        return filtered.sort((a, b) => a.currentListIndex - b.currentListIndex);
       case 'name':
-        return sorted.sort((a, b) => a.card.name.localeCompare(b.card.name));
+        return filtered.sort((a, b) => a.card.name.localeCompare(b.card.name));
       case 'created':
-        return sorted.sort((a, b) => {
+        return filtered.sort((a, b) => {
           const dateA = getCardCreationDate(a.card.id);
           const dateB = getCardCreationDate(b.card.id);
           return dateB.getTime() - dateA.getTime(); // Newest first
         });
       default:
-        return sorted;
+        return filtered;
     }
   };
 
@@ -277,18 +284,29 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
         ) : (
           <div className="space-y-4">
             {/* Sort Controls */}
-            <div className="flex items-center gap-2 px-1">
-              <span className="text-xs text-muted-foreground">Sort by:</span>
-              <Select value={sortBy} onValueChange={(value: 'progress' | 'name' | 'created') => setSortBy(value)}>
-                <SelectTrigger className="w-32 h-8 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="progress">Progress</SelectItem>
-                  <SelectItem value="name">Name (A-Z)</SelectItem>
-                  <SelectItem value="created">Created Date</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-center gap-3 px-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Sort by:</span>
+                <Select value={sortBy} onValueChange={(value: 'progress' | 'name' | 'created') => setSortBy(value)}>
+                  <SelectTrigger className="w-32 h-8 text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="progress">Progress</SelectItem>
+                    <SelectItem value="name">Name (A-Z)</SelectItem>
+                    <SelectItem value="created">Created Date</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowLastColumn(!showLastColumn)}
+                className="h-8 text-xs px-3"
+              >
+                {showLastColumn ? 'Hide Last' : 'Show Last'}
+              </Button>
             </div>
             
             <div className="space-y-4">
