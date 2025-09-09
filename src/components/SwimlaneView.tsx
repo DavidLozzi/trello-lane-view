@@ -253,7 +253,9 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
           </Card>
         ) : (
           <div className="space-y-4">
-            {cardProgresses.map((progress) => (
+                 {cardProgresses
+                   .sort((a, b) => a.currentListIndex - b.currentListIndex)
+                   .map((progress) => (
               <Card key={progress.card.id} className="shadow-card hover:shadow-elevated transition-shadow animate-fade-in">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
