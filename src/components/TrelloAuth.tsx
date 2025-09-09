@@ -87,22 +87,23 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
             <Input
               id="token"
               type="password"
-              placeholder="Enter your API token"
+              placeholder="Enter your access token"
               value={token}
               onChange={(e) => setToken(e.target.value)}
               className="transition-all duration-200 focus:ring-2 focus:ring-trello-primary"
             />
             <p className="text-sm text-muted-foreground">
-              Get your API token from{' '}
+              After getting your API key, visit{' '}
               <a 
-                href="https://id.atlassian.com/manage-profile/security/api-tokens" 
+                href={`https://trello.com/1/authorize?expiration=never&scope=read&response_type=token&name=Trello%20Visualizer&key=${apiKey || 'YOUR_API_KEY'}`}
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-trello-primary hover:underline inline-flex items-center gap-1"
               >
-                id.atlassian.com/manage-profile/security/api-tokens
+                this authorization link
                 <ExternalLink className="w-3 h-3" />
               </a>
+              {!apiKey && ' (enter API key first)'}
             </p>
           </div>
 
