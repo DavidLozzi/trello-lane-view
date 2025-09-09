@@ -271,21 +271,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
 
   const exportToPPTX = async () => {
     try {
-      // Try to load template from public folder
-      const response = await fetch('/swimlane_template.pptx');
-      let pptx: any;
-      
-      if (response.ok) {
-        // Use template if available
-        const templateBlob = await response.blob();
-        pptx = new PptxGenJS();
-        // Note: PptxGenJS doesn't have built-in template loading, so we'll create a new presentation
-        // but use the template's styling approach
-      } else {
-        // Fallback to creating from scratch
-        pptx = new PptxGenJS();
-      }
-      
+      const pptx = new PptxGenJS();
       const slide = pptx.addSlide();
       
       // Set slide background (template style)
@@ -322,7 +308,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
         y: 0.3,
         w: 1,
         h: 0.6,
-        fill: 'E8F4FD',
+        fill: { color: 'E8F4FD' },
         line: { color: '3498DB', width: 1 }
       });
       
@@ -349,39 +335,91 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
         fontFace: 'Calibri'
       });
       
-      // Create table data with template styling
+      // Create dynamic table data based on actual board data
       const tableData: any[][] = [];
       
-      // Header row with template colors
-      tableData.push([
-        { text: 'Card Name', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } },
-        { text: 'Current Status', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } },
-        { text: 'Progress', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } },
-        { text: 'Labels', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } }
-      ]);
+      // Header row with dynamic columns
+      const headerRow = [
+        { text: 'Card', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } },
+        { text: 'Last Activity', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } }
+      ];
       
-      // Data rows
-      getSortedCardProgresses().forEach(progress => {
-        const progressPercentage = Math.round((progress.currentListIndex / (progress.totalLists - 1)) * 100);
-        const labelsText = progress.card.labels.map(label => label.name || label.color).join(', ') || 'None';
-        
-        tableData.push([
-          { text: progress.card.name, options: { fontFace: 'Calibri' } },
-          { text: progress.currentList, options: { fontFace: 'Calibri' } },
-          { text: `${progressPercentage}%`, options: { fontFace: 'Calibri' } },
-          { text: labelsText, options: { fontFace: 'Calibri' } }
-        ]);
+      // Add dynamic column headers for visible lists
+      lists.filter(list => visibleColumns.includes(list.id)).forEach(list => {
+        headerRow.push({ 
+          text: list.name, 
+          options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } 
+        });
       });
       
-      // Add table with template styling
+      tableData.push(headerRow);
+      
+      // Data rows with dynamic card data
+      getSortedCardProgresses().forEach(progress => {
+        const row: any[] = [];
+        
+        // Card name with labels
+        const labelsText = progress.card.labels.map(label => label.name || label.color).join(', ');
+        const cardText = labelsText ? `${progress.card.name}\n${labelsText}` : progress.card.name;
+        row.push({ text: cardText, options: { fontFace: 'Calibri' } });
+        
+        // Last activity
+        row.push({ 
+          text: new Date(progress.card.dateLastActivity).toLocaleDateString(), 
+          options: { fontFace: 'Calibri' } 
+        });
+        
+        // Status for each visible column
+        lists.filter(list => visibleColumns.includes(list.id)).forEach((list, index) => {
+          const originalIndex = lists.findIndex(l => l.id === list.id);
+          let status: 'completed' | 'current' | 'pending';
+          
+          // Check if the card is closed/checked off or in a "Done" column
+          const isCardCompleted = progress.card.closed || progress.currentList.toLowerCase().includes('done');
+          
+          if (isCardCompleted && originalIndex === progress.currentListIndex) {
+            status = 'completed';
+          } else if (originalIndex < progress.currentListIndex) {
+            status = 'completed';
+          } else if (originalIndex === progress.currentListIndex && !isCardCompleted) {
+            status = 'current';
+          } else {
+            status = 'pending';
+          }
+          
+          // Add status indicator
+          if (status === 'completed') {
+            row.push({ text: '✓', options: { fontFace: 'Calibri', fill: '27AE60', color: 'FFFFFF' } });
+          } else if (status === 'current') {
+            row.push({ text: '●', options: { fontFace: 'Calibri', fill: 'F39C12', color: 'FFFFFF' } });
+          } else {
+            row.push({ text: '○', options: { fontFace: 'Calibri', fill: 'ECF0F1', color: '7F8C8D' } });
+          }
+        });
+        
+        tableData.push(row);
+      });
+      
+      // Calculate dynamic column widths
+      const numColumns = 2 + lists.filter(list => visibleColumns.includes(list.id)).length;
+      const columnWidth = 9 / numColumns;
+      const colWidths = [2.0, 1.2]; // Fixed widths for Card and Last Activity
+      
+      // Add remaining width for status columns
+      for (let i = 2; i < numColumns; i++) {
+        colWidths.push(0.6);
+      }
+      
+      // Add table with dynamic data
       slide.addTable(tableData, {
         x: 0.5,
         y: 2.5,
         w: 9,
-        fontSize: 11,
+        fontSize: 10,
         border: { pt: 1, color: 'BDC3C7' },
-        rowH: 0.5,
-        margin: 0.1
+        rowH: 0.6,
+        margin: 0.05,
+        colW: colWidths
       });
       
       // Add footer area with template styling
@@ -390,7 +428,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
         y: 6.8,
         w: 9,
         h: 0.7,
-        fill: 'F8F9FA',
+        fill: { color: 'F8F9FA' },
         line: { color: 'E9ECEF', width: 1 }
       });
       
