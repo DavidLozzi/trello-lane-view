@@ -420,7 +420,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                   <DropdownMenuContent align="start" className="w-48">
                     <DropdownMenuLabel>Filter by Labels</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    {[...new Set(cardProgresses.flatMap(progress => progress.card.labels))].map((label) => {
+                    {Array.from(new Map(cardProgresses.flatMap(progress => progress.card.labels).map(label => [label.id, label])).values()).map((label) => {
                       const colors = getTrelloLabelColor(label.color);
                       return (
                         <DropdownMenuCheckboxItem
