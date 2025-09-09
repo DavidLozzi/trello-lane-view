@@ -269,81 +269,157 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
     }
   };
 
-  
   const exportToPPTX = async () => {
-    const pptx = new PptxGenJS();
-    const slide = pptx.addSlide();
-    
-    // Add title
-    slide.addText(board.name, {
-      x: 0.5,
-      y: 0.3,
-      w: 9,
-      h: 0.7,
-      fontSize: 24,
-      bold: true,
-      color: '000000',
-      align: 'center'
-    });
-    
-    // Add subtitle
-    slide.addText(`${getSortedCardProgresses().length} cards • ${lists.length} columns`, {
-      x: 0.5,
-      y: 1,
-      w: 9,
-      h: 0.4,
-      fontSize: 14,
-      color: '666666',
-      align: 'center'
-    });
-    
-    // Create table data for the swimlane view
-    const tableData: any[][] = [];
-    
-    // Header row
-    tableData.push([
-      { text: 'Card', options: { bold: true, fill: '4A90E2', color: 'FFFFFF' } },
-      { text: 'Current Status', options: { bold: true, fill: '4A90E2', color: 'FFFFFF' } },
-      { text: 'Progress', options: { bold: true, fill: '4A90E2', color: 'FFFFFF' } },
-      { text: 'Labels', options: { bold: true, fill: '4A90E2', color: 'FFFFFF' } }
-    ]);
-    
-    // Data rows
-    getSortedCardProgresses().forEach(progress => {
-      const progressPercentage = Math.round((progress.currentListIndex / (progress.totalLists - 1)) * 100);
-      const labelsText = progress.card.labels.map(label => label.name || label.color).join(', ') || 'None';
+    try {
+      // Try to load template from public folder
+      const response = await fetch('/swimlane_template.pptx');
+      let pptx: any;
       
+      if (response.ok) {
+        // Use template if available
+        const templateBlob = await response.blob();
+        pptx = new PptxGenJS();
+        // Note: PptxGenJS doesn't have built-in template loading, so we'll create a new presentation
+        // but use the template's styling approach
+      } else {
+        // Fallback to creating from scratch
+        pptx = new PptxGenJS();
+      }
+      
+      const slide = pptx.addSlide();
+      
+      // Set slide background (template style)
+      slide.background = { fill: 'FFFFFF' };
+      
+      // Add title with template styling
+      slide.addText(board.name, {
+        x: 0.5,
+        y: 0.5,
+        w: 9,
+        h: 0.8,
+        fontSize: 28,
+        bold: true,
+        color: '2C3E50',
+        align: 'center',
+        fontFace: 'Calibri'
+      });
+      
+      // Add subtitle with template styling
+      slide.addText(`${getSortedCardProgresses().length} cards • ${lists.length} columns`, {
+        x: 0.5,
+        y: 1.3,
+        w: 9,
+        h: 0.4,
+        fontSize: 14,
+        color: '7F8C8D',
+        align: 'center',
+        fontFace: 'Calibri'
+      });
+      
+      // Add logo/branding area
+      slide.addShape(pptx.ShapeType.rect, {
+        x: 8.5,
+        y: 0.3,
+        w: 1,
+        h: 0.6,
+        fill: 'E8F4FD',
+        line: { color: '3498DB', width: 1 }
+      });
+      
+      slide.addText('LOGO', {
+        x: 8.5,
+        y: 0.45,
+        w: 1,
+        h: 0.3,
+        fontSize: 10,
+        color: '3498DB',
+        align: 'center',
+        fontFace: 'Calibri'
+      });
+      
+      // Add header for table section
+      slide.addText('Project Status Overview', {
+        x: 0.5,
+        y: 2,
+        w: 9,
+        h: 0.4,
+        fontSize: 16,
+        bold: true,
+        color: '2C3E50',
+        fontFace: 'Calibri'
+      });
+      
+      // Create table data with template styling
+      const tableData: any[][] = [];
+      
+      // Header row with template colors
       tableData.push([
-        { text: progress.card.name },
-        { text: progress.currentList },
-        { text: `${progressPercentage}%` },
-        { text: labelsText }
+        { text: 'Card Name', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } },
+        { text: 'Current Status', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } },
+        { text: 'Progress', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } },
+        { text: 'Labels', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } }
       ]);
-    });
-    
-    // Add table to slide
-    slide.addTable(tableData, {
-      x: 0.5,
-      y: 2,
-      w: 9,
-      fontSize: 11,
-      border: { pt: 1, color: 'CCCCCC' },
-      rowH: 0.4
-    });
-    
-    // Add timestamp
-    slide.addText(`Exported on ${new Date().toLocaleDateString()}`, {
-      x: 0.5,
-      y: 7,
-      w: 9,
-      h: 0.3,
-      fontSize: 10,
-      color: '999999',
-      align: 'center'
-    });
-    
-    // Save the presentation
-    await pptx.writeFile({ fileName: `${board.name}_Swimlane_Export.pptx` });
+      
+      // Data rows
+      getSortedCardProgresses().forEach(progress => {
+        const progressPercentage = Math.round((progress.currentListIndex / (progress.totalLists - 1)) * 100);
+        const labelsText = progress.card.labels.map(label => label.name || label.color).join(', ') || 'None';
+        
+        tableData.push([
+          { text: progress.card.name, options: { fontFace: 'Calibri' } },
+          { text: progress.currentList, options: { fontFace: 'Calibri' } },
+          { text: `${progressPercentage}%`, options: { fontFace: 'Calibri' } },
+          { text: labelsText, options: { fontFace: 'Calibri' } }
+        ]);
+      });
+      
+      // Add table with template styling
+      slide.addTable(tableData, {
+        x: 0.5,
+        y: 2.5,
+        w: 9,
+        fontSize: 11,
+        border: { pt: 1, color: 'BDC3C7' },
+        rowH: 0.5,
+        margin: 0.1
+      });
+      
+      // Add footer area with template styling
+      slide.addShape(pptx.ShapeType.rect, {
+        x: 0.5,
+        y: 6.8,
+        w: 9,
+        h: 0.7,
+        fill: 'F8F9FA',
+        line: { color: 'E9ECEF', width: 1 }
+      });
+      
+      slide.addText(`Exported on ${new Date().toLocaleDateString()}`, {
+        x: 1,
+        y: 7,
+        w: 4,
+        h: 0.3,
+        fontSize: 10,
+        color: '6C757D',
+        fontFace: 'Calibri'
+      });
+      
+      slide.addText('Generated by Trello Swimlane Viewer', {
+        x: 5.5,
+        y: 7,
+        w: 3.5,
+        h: 0.3,
+        fontSize: 10,
+        color: '6C757D',
+        align: 'right',
+        fontFace: 'Calibri'
+      });
+      
+      // Save the presentation
+      await pptx.writeFile({ fileName: `${board.name}_Swimlane_Export.pptx` });
+    } catch (error) {
+      console.error('Error exporting to PPTX:', error);
+    }
   };
 
   if (isLoading) {
@@ -420,6 +496,17 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
               >
                 <FileDown className="w-4 h-4 mr-2" />
                 Export to PPTX
+              </Button>
+              <Button 
+                variant="ghost"
+                size="sm"
+                onClick={async () => {
+                  const { createTemplate } = await import('../utils/createTemplate');
+                  await createTemplate();
+                }}
+                className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white text-xs"
+              >
+                Download Template
               </Button>
               <Button 
                 variant="outline"
