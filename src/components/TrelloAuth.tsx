@@ -69,7 +69,7 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
               className="transition-all duration-200 focus:ring-2 focus:ring-trello-primary"
             />
             <p className="text-sm text-muted-foreground">
-              First create a Power-Up at{' '}
+              Create a Power-Up at{' '}
               <a 
                 href="https://trello.com/power-ups/admin" 
                 target="_blank" 
@@ -79,7 +79,8 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
                 trello.com/power-ups/admin
                 <ExternalLink className="w-3 h-3" />
               </a>
-              , then get your API key from the API key tab
+              <br />
+              <strong>Redirect URL:</strong> <code className="bg-muted px-1 rounded text-xs">{window.location.origin}</code>
             </p>
           </div>
 
