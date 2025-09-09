@@ -235,11 +235,6 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
     // Filter by visible card columns for both views
     filtered = filtered.filter(progress => visibleCardColumns.includes(progress.card.list.id));
     
-    // For table view: also filter out cards that are in hidden table columns
-    if (viewMode === 'table') {
-      filtered = filtered.filter(progress => visibleColumns.includes(progress.card.list.id));
-    }
-    
     switch (sortBy) {
       case 'progress':
         return filtered.sort((a, b) => a.currentListIndex - b.currentListIndex);
