@@ -87,17 +87,26 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="token">Access Token (optional)</Label>
+            <Label htmlFor="token">Access Token</Label>
             <Input
               id="token"
               type="password"
-              placeholder="Paste token here after authentication"
+              placeholder="Enter your API token"
               value={token}
               onChange={(e) => setToken(e.target.value)}
               className="transition-all duration-200 focus:ring-2 focus:ring-trello-primary"
             />
             <p className="text-sm text-muted-foreground">
-              Leave empty to get token through OAuth
+              Get your API token from{' '}
+              <a 
+                href="https://id.atlassian.com/manage-profile/security/api-tokens" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-trello-primary hover:underline inline-flex items-center gap-1"
+              >
+                id.atlassian.com/manage-profile/security/api-tokens
+                <ExternalLink className="w-3 h-3" />
+              </a>
             </p>
           </div>
 
