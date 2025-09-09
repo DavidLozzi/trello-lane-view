@@ -242,20 +242,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Sort by:</span>
-                <Select value={sortBy} onValueChange={(value: 'progress' | 'name' | 'created') => setSortBy(value)}>
-                  <SelectTrigger className="w-40">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="progress">Progress</SelectItem>
-                    <SelectItem value="name">Name (A-Z)</SelectItem>
-                    <SelectItem value="created">Created Date</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="flex items-center gap-2">
               <Button 
                 variant="outline"
                 size="sm"
@@ -288,7 +275,23 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
             </CardContent>
           </Card>
         ) : (
-           <div className="space-y-4">
+          <div className="space-y-4">
+            {/* Sort Controls */}
+            <div className="flex items-center gap-2 px-1">
+              <span className="text-xs text-muted-foreground">Sort by:</span>
+              <Select value={sortBy} onValueChange={(value: 'progress' | 'name' | 'created') => setSortBy(value)}>
+                <SelectTrigger className="w-32 h-8 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="progress">Progress</SelectItem>
+                  <SelectItem value="name">Name (A-Z)</SelectItem>
+                  <SelectItem value="created">Created Date</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-4">
                  {getSortedCardProgresses().map((progress) => (
               <Card key={progress.card.id} className="shadow-card hover:shadow-elevated transition-shadow animate-fade-in">
                 <CardHeader className="pb-3">
@@ -398,6 +401,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                 </CardContent>
               </Card>
             ))}
+            </div>
           </div>
         )}
       </div>
