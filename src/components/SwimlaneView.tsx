@@ -57,6 +57,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
   const [viewMode, setViewMode] = useState<'swimlane' | 'table'>('swimlane');
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   const [visibleCardColumns, setVisibleCardColumns] = useState<string[]>([]);
+  const [visibleLabels, setVisibleLabels] = useState<string[]>([]);
 
   useEffect(() => {
     loadBoardData();
@@ -152,6 +153,12 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
       if (visibleCardColumns.length === 0) {
         setVisibleCardColumns(sortedLists.map(list => list.id));
       }
+      
+      // Initialize visible labels (show all by default)
+      const allLabels = [...new Set(transformedCards.flatMap(card => card.labels.map(label => label.id)))];
+      if (visibleLabels.length === 0) {
+        setVisibleLabels(allLabels);
+      }
 
       // Calculate progress for each card
       const progresses = transformedCards.map((card: TrelloCard) => {
@@ -232,8 +239,17 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
   const getSortedCardProgresses = () => {
     let filtered = [...cardProgresses];
     
-    // Filter by visible card columns for both views
+    // Filter by visible card columns (status)
     filtered = filtered.filter(progress => visibleCardColumns.includes(progress.card.list.id));
+    
+    // Filter by visible labels (only if card has labels and at least one matches)
+    filtered = filtered.filter(progress => {
+      if (progress.card.labels.length === 0) {
+        // Show cards without labels only if no specific labels are selected
+        return visibleLabels.length === [...new Set(cardProgresses.flatMap(p => p.card.labels.map(l => l.id)))].length;
+      }
+      return progress.card.labels.some(label => visibleLabels.includes(label.id));
+    });
     
     switch (sortBy) {
       case 'progress':
@@ -366,11 +382,11 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                       className="h-8 text-xs px-3"
                     >
                       <Filter className="w-3 h-3 mr-1" />
-                      Filter Cards
+                      Filter Status
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-48">
-                    <DropdownMenuLabel>Filter by Column</DropdownMenuLabel>
+                    <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     {lists.map((list) => (
                       <DropdownMenuCheckboxItem
@@ -387,6 +403,47 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                         {list.name}
                       </DropdownMenuCheckboxItem>
                     ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 text-xs px-3"
+                    >
+                      <Filter className="w-3 h-3 mr-1" />
+                      Filter Labels
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48">
+                    <DropdownMenuLabel>Filter by Labels</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {[...new Set(cardProgresses.flatMap(progress => progress.card.labels))].map((label) => {
+                      const colors = getTrelloLabelColor(label.color);
+                      return (
+                        <DropdownMenuCheckboxItem
+                          key={label.id}
+                          checked={visibleLabels.includes(label.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setVisibleLabels([...visibleLabels, label.id]);
+                            } else {
+                              setVisibleLabels(visibleLabels.filter(id => id !== label.id));
+                            }
+                          }}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div 
+                              className="w-3 h-3 rounded-sm"
+                              style={{ backgroundColor: colors.bg }}
+                            />
+                            {label.name || label.color}
+                          </div>
+                        </DropdownMenuCheckboxItem>
+                      );
+                    })}
                   </DropdownMenuContent>
                 </DropdownMenu>
                 
