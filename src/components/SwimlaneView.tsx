@@ -56,7 +56,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
   const [sortBy, setSortBy] = useState<'progress' | 'name' | 'created'>('progress');
   const [viewMode, setViewMode] = useState<'swimlane' | 'table'>('swimlane');
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
-  const [visibleCards, setVisibleCards] = useState<string[]>([]);
+  const [visibleCardColumns, setVisibleCardColumns] = useState<string[]>([]);
 
   useEffect(() => {
     loadBoardData();
@@ -145,12 +145,12 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
       setLists(sortedLists);
       setCards(transformedCards);
       
-      // Initialize visible columns and cards (show all by default)
+      // Initialize visible columns and card columns (show all by default)
       if (visibleColumns.length === 0) {
         setVisibleColumns(sortedLists.map(list => list.id));
       }
-      if (visibleCards.length === 0) {
-        setVisibleCards(transformedCards.map(card => card.id));
+      if (visibleCardColumns.length === 0) {
+        setVisibleCardColumns(sortedLists.map(list => list.id));
       }
 
       // Calculate progress for each card
@@ -232,10 +232,10 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
   const getSortedCardProgresses = () => {
     let filtered = [...cardProgresses];
     
-    // Filter by visible cards for both views
-    filtered = filtered.filter(progress => visibleCards.includes(progress.card.id));
+    // Filter by visible card columns for both views
+    filtered = filtered.filter(progress => visibleCardColumns.includes(progress.card.list.id));
     
-    // For table view: also filter out cards that are in hidden columns
+    // For table view: also filter out cards that are in hidden table columns
     if (viewMode === 'table') {
       filtered = filtered.filter(progress => visibleColumns.includes(progress.card.list.id));
     }
@@ -371,25 +371,25 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                       className="h-8 text-xs px-3"
                     >
                       <Filter className="w-3 h-3 mr-1" />
-                      Show Cards
+                      Filter Cards
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-48">
-                    <DropdownMenuLabel>Show Cards</DropdownMenuLabel>
+                    <DropdownMenuLabel>Filter by Column</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    {cardProgresses.map((progress) => (
+                    {lists.map((list) => (
                       <DropdownMenuCheckboxItem
-                        key={progress.card.id}
-                        checked={visibleCards.includes(progress.card.id)}
+                        key={list.id}
+                        checked={visibleCardColumns.includes(list.id)}
                         onCheckedChange={(checked) => {
                           if (checked) {
-                            setVisibleCards([...visibleCards, progress.card.id]);
+                            setVisibleCardColumns([...visibleCardColumns, list.id]);
                           } else {
-                            setVisibleCards(visibleCards.filter(id => id !== progress.card.id));
+                            setVisibleCardColumns(visibleCardColumns.filter(id => id !== list.id));
                           }
                         }}
                       >
-                        {progress.card.name}
+                        {list.name}
                       </DropdownMenuCheckboxItem>
                     ))}
                   </DropdownMenuContent>
