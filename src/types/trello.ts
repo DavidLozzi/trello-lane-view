@@ -24,6 +24,7 @@ export interface TrelloCard {
   due: string | null;
   dateLastActivity: string;
   movedToCurrentListDate?: string;
+  closed: boolean;
   labels: TrelloLabel[];
   list: {
     id: string;

@@ -54,7 +54,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
       
       // Fetch cards from the selected board
       const cardsResponse = await fetch(
-        `https://api.trello.com/1/boards/${board.id}/cards?key=${apiKey}&token=${token}&fields=id,name,desc,pos,due,dateLastActivity,labels,idList,url,cover&list=true`
+        `https://api.trello.com/1/boards/${board.id}/cards?key=${apiKey}&token=${token}&fields=id,name,desc,pos,due,dateLastActivity,labels,idList,url,cover,closed&list=true`
       );
       
       if (!cardsResponse.ok) {
@@ -101,6 +101,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
             due: card.due,
             dateLastActivity: card.dateLastActivity,
             movedToCurrentListDate,
+            closed: card.closed || false,
             labels: card.labels || [],
             list: {
               id: card.idList,
@@ -333,15 +334,15 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                      {lists.map((list, index) => {
                        let status: 'completed' | 'current' | 'pending';
                        
-                       // Check if the card is in a "Done" column (case insensitive)
-                       const isCardInDoneColumn = progress.currentList.toLowerCase().includes('done');
+                       // Check if the card is closed/checked off or in a "Done" column
+                       const isCardCompleted = progress.card.closed || progress.currentList.toLowerCase().includes('done');
                        
-                       if (isCardInDoneColumn && index === progress.currentListIndex) {
-                         // If card is in a Done column, show it as completed
+                       if (isCardCompleted && index === progress.currentListIndex) {
+                         // If card is closed/checked off, show current column as completed
                          status = 'completed';
                        } else if (index < progress.currentListIndex) {
                          status = 'completed';
-                       } else if (index === progress.currentListIndex) {
+                       } else if (index === progress.currentListIndex && !isCardCompleted) {
                          status = 'current';
                        } else {
                          status = 'pending';
