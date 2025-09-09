@@ -15,15 +15,20 @@ const Index = () => {
 
   // Load saved credentials on component mount
   useEffect(() => {
+    console.log('Index: Checking for saved credentials...');
     const savedCredentials = localStorage.getItem(STORAGE_KEY);
     if (savedCredentials) {
       try {
         const parsed = JSON.parse(savedCredentials);
+        console.log('Index: Found saved credentials, setting auth state');
         setAuthState(parsed);
       } catch (error) {
+        console.log('Index: Invalid stored credentials, clearing...');
         // Clear invalid stored data
         localStorage.removeItem(STORAGE_KEY);
       }
+    } else {
+      console.log('Index: No saved credentials found');
     }
   }, []);
 

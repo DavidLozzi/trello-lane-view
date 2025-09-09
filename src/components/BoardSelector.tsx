@@ -17,23 +17,31 @@ export function BoardSelector({ apiKey, token, onBoardSelected }: BoardSelectorP
   const [error, setError] = useState('');
 
   useEffect(() => {
+    console.log('BoardSelector: Component mounted, fetching boards...');
     fetchBoards();
   }, []);
 
   const fetchBoards = async () => {
     try {
+      console.log('BoardSelector: Starting fetch with apiKey:', apiKey?.slice(0, 8) + '...', 'token:', token?.slice(0, 8) + '...');
       setIsLoading(true);
       const response = await fetch(
         `https://api.trello.com/1/members/me/boards?key=${apiKey}&token=${token}&filter=open&fields=id,name,desc,url,prefs`
       );
       
+      console.log('BoardSelector: Response status:', response.status);
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.log('BoardSelector: Error response:', errorText);
         throw new Error('Failed to fetch boards');
       }
 
       const boardsData = await response.json();
+      console.log('BoardSelector: Fetched boards:', boardsData.length);
       setBoards(boardsData);
     } catch (err) {
+      console.log('BoardSelector: Error fetching boards:', err);
       setError(err instanceof Error ? err.message : 'Failed to load boards');
     } finally {
       setIsLoading(false);
