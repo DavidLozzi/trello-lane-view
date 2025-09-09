@@ -381,9 +381,9 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
-                        className="h-8 text-xs px-3"
+                        className="h-8 text-xs px-2 hover:bg-accent text-foreground"
                       >
                         Status
                       </Button>
@@ -412,9 +412,9 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
-                        className="h-8 text-xs px-3"
+                        className="h-8 text-xs px-2 hover:bg-accent text-foreground"
                       >
                         Label
                       </Button>
