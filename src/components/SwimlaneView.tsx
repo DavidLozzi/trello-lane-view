@@ -34,6 +34,7 @@ import {
   Table,
   List,
   Settings,
+  Filter,
   Check
 } from 'lucide-react';
 import { TrelloBoard, TrelloCard, TrelloList, CardProgress } from '@/types/trello';
@@ -55,6 +56,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
   const [sortBy, setSortBy] = useState<'progress' | 'name' | 'created'>('progress');
   const [viewMode, setViewMode] = useState<'swimlane' | 'table'>('swimlane');
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
+  const [visibleCards, setVisibleCards] = useState<string[]>([]);
 
   useEffect(() => {
     loadBoardData();
@@ -143,9 +145,12 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
       setLists(sortedLists);
       setCards(transformedCards);
       
-      // Initialize visible columns (show all by default)
+      // Initialize visible columns and cards (show all by default)
       if (visibleColumns.length === 0) {
         setVisibleColumns(sortedLists.map(list => list.id));
+      }
+      if (visibleCards.length === 0) {
+        setVisibleCards(transformedCards.map(card => card.id));
       }
 
       // Calculate progress for each card
@@ -227,8 +232,10 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
   const getSortedCardProgresses = () => {
     let filtered = [...cardProgresses];
     
-    // For table view: filter out cards that are in hidden columns
-    // For swimlane view: don't filter cards, they'll be handled in rendering
+    // Filter by visible cards for both views
+    filtered = filtered.filter(progress => visibleCards.includes(progress.card.id));
+    
+    // For table view: also filter out cards that are in hidden columns
     if (viewMode === 'table') {
       filtered = filtered.filter(progress => visibleColumns.includes(progress.card.list.id));
     }
@@ -363,30 +370,64 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                       size="sm"
                       className="h-8 text-xs px-3"
                     >
-                      <Settings className="w-3 h-3 mr-1" />
-                      Columns
+                      <Filter className="w-3 h-3 mr-1" />
+                      Show Cards
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-48">
-                    <DropdownMenuLabel>Show Columns</DropdownMenuLabel>
+                    <DropdownMenuLabel>Show Cards</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    {lists.map((list) => (
+                    {cardProgresses.map((progress) => (
                       <DropdownMenuCheckboxItem
-                        key={list.id}
-                        checked={visibleColumns.includes(list.id)}
+                        key={progress.card.id}
+                        checked={visibleCards.includes(progress.card.id)}
                         onCheckedChange={(checked) => {
                           if (checked) {
-                            setVisibleColumns([...visibleColumns, list.id]);
+                            setVisibleCards([...visibleCards, progress.card.id]);
                           } else {
-                            setVisibleColumns(visibleColumns.filter(id => id !== list.id));
+                            setVisibleCards(visibleCards.filter(id => id !== progress.card.id));
                           }
                         }}
                       >
-                        {list.name}
+                        {progress.card.name}
                       </DropdownMenuCheckboxItem>
                     ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
+                
+                {viewMode === 'table' && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs px-3"
+                      >
+                        <Settings className="w-3 h-3 mr-1" />
+                        Columns
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-48">
+                      <DropdownMenuLabel>Show Columns</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {lists.map((list) => (
+                        <DropdownMenuCheckboxItem
+                          key={list.id}
+                          checked={visibleColumns.includes(list.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setVisibleColumns([...visibleColumns, list.id]);
+                            } else {
+                              setVisibleColumns(visibleColumns.filter(id => id !== list.id));
+                            }
+                          }}
+                        >
+                          {list.name}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
 
               <div className="flex items-center gap-2">
@@ -413,9 +454,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
             
             {viewMode === 'swimlane' ? (
               <div className="space-y-4">
-                {getSortedCardProgresses()
-                  .filter(progress => visibleColumns.includes(progress.card.list.id))
-                  .map((progress) => (
+                {getSortedCardProgresses().map((progress) => (
               <Card key={progress.card.id} className="shadow-card hover:shadow-elevated transition-shadow animate-fade-in">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
