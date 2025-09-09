@@ -1,29 +1,54 @@
+import { useState } from 'react';
 import { SwimlaneView } from '@/components/SwimlaneView';
+import { TrelloAuth } from '@/components/TrelloAuth';
+import { BoardSelector } from '@/components/BoardSelector';
 import { TrelloBoard } from '@/types/trello';
 
-// Mock data that mimics Trello's API structure
-const mockBoard: TrelloBoard = {
-  id: 'mock-board-123',
-  name: 'Product Development Workflow',
-  desc: 'A comprehensive product development process from ideation to launch',
-  url: 'https://trello.com/b/mock-board-123',
-  prefs: {
-    background: 'blue',
-    backgroundColor: '#0079bf'
-  }
-};
-
 const Index = () => {
-  const handleBack = () => {
-    // For now, just reload the page
-    window.location.reload();
+  const [authState, setAuthState] = useState<{
+    apiKey: string;
+    token: string;
+  } | null>(null);
+  const [selectedBoard, setSelectedBoard] = useState<TrelloBoard | null>(null);
+
+  const handleAuthenticated = (apiKey: string, token: string) => {
+    setAuthState({ apiKey, token });
   };
 
+  const handleBoardSelected = (board: TrelloBoard) => {
+    setSelectedBoard(board);
+  };
+
+  const handleBack = () => {
+    if (selectedBoard) {
+      setSelectedBoard(null);
+    } else {
+      setAuthState(null);
+    }
+  };
+
+  // Show authentication if not authenticated
+  if (!authState) {
+    return <TrelloAuth onAuthenticated={handleAuthenticated} />;
+  }
+
+  // Show board selector if authenticated but no board selected
+  if (!selectedBoard) {
+    return (
+      <BoardSelector
+        apiKey={authState.apiKey}
+        token={authState.token}
+        onBoardSelected={handleBoardSelected}
+      />
+    );
+  }
+
+  // Show swimlane view with selected board
   return (
     <SwimlaneView 
-      board={mockBoard}
-      apiKey="mock-api-key"
-      token="mock-token"
+      board={selectedBoard}
+      apiKey={authState.apiKey}
+      token={authState.token}
       onBack={handleBack}
     />
   );
