@@ -418,7 +418,20 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                     </Button>
                   </DropdownMenuTrigger>
                    <DropdownMenuContent align="start" className="w-64">
-                     <DropdownMenuLabel>Filter by Labels</DropdownMenuLabel>
+                     <div className="flex items-center justify-between px-2 py-1.5">
+                       <DropdownMenuLabel className="p-0">Filter by Labels</DropdownMenuLabel>
+                       <Button
+                         variant="ghost"
+                         size="sm"
+                         className="h-6 px-2 text-xs hover:bg-primary hover:text-primary-foreground"
+                         onClick={() => {
+                           const allLabelIds = Array.from(new Map(cardProgresses.flatMap(progress => progress.card.labels).map(l => [l.id, l])).keys());
+                           setVisibleLabels(allLabelIds);
+                         }}
+                       >
+                         All
+                       </Button>
+                     </div>
                      <DropdownMenuSeparator />
                      {Array.from(new Map(cardProgresses.flatMap(progress => progress.card.labels).map(label => [label.id, label])).values()).map((label) => {
                        const colors = getTrelloLabelColor(label.color);
