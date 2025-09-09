@@ -65,25 +65,51 @@ export const createTemplate = async () => {
     fontFace: 'Calibri'
   });
   
-  // Add table placeholder with sample data and styling
+  // Add table placeholder with all columns matching the app's table view
   const tableData: any[][] = [
     [
-      { text: 'Card Name', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } },
-      { text: 'Current Status', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } },
-      { text: 'Progress', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } },
-      { text: 'Labels', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } }
+      { text: 'Card', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } },
+      { text: 'Last Activity', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } },
+      { text: 'Backlog', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } },
+      { text: 'Data Curation', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } },
+      { text: 'Ready for Build', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } },
+      { text: 'Ingested', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } },
+      { text: 'Relevancy', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } },
+      { text: 'Testing', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } },
+      { text: 'Done 🎉', options: { bold: true, fill: '3498DB', color: 'FFFFFF', fontFace: 'Calibri' } }
     ],
     [
-      { text: 'Sample Card Name', options: { fontFace: 'Calibri' } },
-      { text: 'In Progress', options: { fontFace: 'Calibri' } },
-      { text: '75%', options: { fontFace: 'Calibri' } },
-      { text: 'Feature, Priority', options: { fontFace: 'Calibri' } }
+      { text: 'TDA GenAI\nValue of data, Pre/post curation', options: { fontFace: 'Calibri' } },
+      { text: '9/9/2025', options: { fontFace: 'Calibri' } },
+      { text: '✓', options: { fontFace: 'Calibri', fill: '27AE60', color: 'FFFFFF' } },
+      { text: '✓', options: { fontFace: 'Calibri', fill: '27AE60', color: 'FFFFFF' } },
+      { text: '●', options: { fontFace: 'Calibri', fill: 'F39C12', color: 'FFFFFF' } },
+      { text: '○', options: { fontFace: 'Calibri', fill: 'ECF0F1', color: '7F8C8D' } },
+      { text: '○', options: { fontFace: 'Calibri', fill: 'ECF0F1', color: '7F8C8D' } },
+      { text: '○', options: { fontFace: 'Calibri', fill: 'ECF0F1', color: '7F8C8D' } },
+      { text: '○', options: { fontFace: 'Calibri', fill: 'ECF0F1', color: '7F8C8D' } }
     ],
     [
-      { text: 'Another Card', options: { fontFace: 'Calibri' } },
-      { text: 'Done', options: { fontFace: 'Calibri' } },
-      { text: '100%', options: { fontFace: 'Calibri' } },
-      { text: 'Bug Fix', options: { fontFace: 'Calibri' } }
+      { text: 'Beauty\nContext, Value of data', options: { fontFace: 'Calibri' } },
+      { text: '9/9/2025', options: { fontFace: 'Calibri' } },
+      { text: '✓', options: { fontFace: 'Calibri', fill: '27AE60', color: 'FFFFFF' } },
+      { text: '✓', options: { fontFace: 'Calibri', fill: '27AE60', color: 'FFFFFF' } },
+      { text: '✓', options: { fontFace: 'Calibri', fill: '27AE60', color: 'FFFFFF' } },
+      { text: '●', options: { fontFace: 'Calibri', fill: 'F39C12', color: 'FFFFFF' } },
+      { text: '○', options: { fontFace: 'Calibri', fill: 'ECF0F1', color: '7F8C8D' } },
+      { text: '○', options: { fontFace: 'Calibri', fill: 'ECF0F1', color: '7F8C8D' } },
+      { text: '○', options: { fontFace: 'Calibri', fill: 'ECF0F1', color: '7F8C8D' } }
+    ],
+    [
+      { text: 'POP ESF', options: { fontFace: 'Calibri' } },
+      { text: '9/9/2025', options: { fontFace: 'Calibri' } },
+      { text: '✓', options: { fontFace: 'Calibri', fill: '27AE60', color: 'FFFFFF' } },
+      { text: '✓', options: { fontFace: 'Calibri', fill: '27AE60', color: 'FFFFFF' } },
+      { text: '✓', options: { fontFace: 'Calibri', fill: '27AE60', color: 'FFFFFF' } },
+      { text: '✓', options: { fontFace: 'Calibri', fill: '27AE60', color: 'FFFFFF' } },
+      { text: '✓', options: { fontFace: 'Calibri', fill: '27AE60', color: 'FFFFFF' } },
+      { text: '✓', options: { fontFace: 'Calibri', fill: '27AE60', color: 'FFFFFF' } },
+      { text: '●', options: { fontFace: 'Calibri', fill: '27AE60', color: 'FFFFFF' } }
     ]
   ];
   
@@ -91,10 +117,11 @@ export const createTemplate = async () => {
     x: 0.5,
     y: 2.5,
     w: 9,
-    fontSize: 11,
+    fontSize: 10,
     border: { pt: 1, color: 'BDC3C7' },
-    rowH: 0.5,
-    margin: 0.1
+    rowH: 0.6,
+    margin: 0.05,
+    colW: [1.8, 1.0, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7, 0.7]
   });
   
   // Add footer area
