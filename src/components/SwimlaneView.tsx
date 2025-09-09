@@ -458,18 +458,6 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                              >
                                1
                              </Button>
-                             <Button
-                               variant="ghost"
-                               size="sm"
-                               className="h-5 w-5 p-0 text-xs hover:bg-destructive hover:text-destructive-foreground"
-                               onClick={(e) => {
-                                 e.stopPropagation();
-                                 setVisibleLabels(allLabelIds.filter(id => id !== label.id));
-                               }}
-                               title="All except this"
-                             >
-                               ×
-                             </Button>
                            </div>
                          </div>
                        );
