@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, ExternalLink, Key } from 'lucide-react';
+import { Loader2, ExternalLink, Key, Copy } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface TrelloAuthProps {
   onAuthenticated: (apiKey: string, token: string) => void;
@@ -15,6 +16,15 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
   const [token, setToken] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const { toast } = useToast();
+
+  const copyRedirectUrl = () => {
+    const redirectUrl = window.location.origin;
+    navigator.clipboard.writeText(redirectUrl);
+    toast({
+      description: "Redirect URL copied to clipboard!",
+    });
+  };
 
   const handleAuth = async () => {
     if (!apiKey.trim()) {
@@ -78,9 +88,20 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
               >
                 trello.com/power-ups/admin
                 <ExternalLink className="w-3 h-3" />
-              </a>
-              <br />
-              <strong>Redirect URL:</strong> <code className="bg-muted px-1 rounded text-xs">{window.location.origin}</code>
+               </a>
+               <br />
+               <div className="flex items-center gap-2 mt-1">
+                 <span className="text-xs"><strong>Redirect URL:</strong></span>
+                 <code className="bg-muted px-1 rounded text-xs flex-1">{window.location.origin}</code>
+                 <Button
+                   variant="outline"
+                   size="sm"
+                   onClick={copyRedirectUrl}
+                   className="h-6 w-6 p-0"
+                 >
+                   <Copy className="w-3 h-3" />
+                 </Button>
+               </div>
             </p>
           </div>
 
