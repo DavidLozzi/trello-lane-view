@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Loader2, 
   CheckCircle, 
@@ -31,6 +32,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
   const [cardProgresses, setCardProgresses] = useState<CardProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [sortBy, setSortBy] = useState<'progress' | 'name' | 'created'>('progress');
 
   useEffect(() => {
     loadBoardData();
@@ -176,6 +178,26 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
     }
   };
 
+  // Sorting function
+  const getSortedCardProgresses = () => {
+    const sorted = [...cardProgresses];
+    
+    switch (sortBy) {
+      case 'progress':
+        return sorted.sort((a, b) => a.currentListIndex - b.currentListIndex);
+      case 'name':
+        return sorted.sort((a, b) => a.card.name.localeCompare(b.card.name));
+      case 'created':
+        return sorted.sort((a, b) => {
+          const dateA = getCardCreationDate(a.card.id);
+          const dateB = getCardCreationDate(b.card.id);
+          return dateB.getTime() - dateA.getTime(); // Newest first
+        });
+      default:
+        return sorted;
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -220,7 +242,20 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Sort by:</span>
+                <Select value={sortBy} onValueChange={(value: 'progress' | 'name' | 'created') => setSortBy(value)}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="progress">Progress</SelectItem>
+                    <SelectItem value="name">Name (A-Z)</SelectItem>
+                    <SelectItem value="created">Created Date</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <Button 
                 variant="outline"
                 size="sm"
@@ -253,10 +288,8 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-4">
-                 {cardProgresses
-                   .sort((a, b) => a.currentListIndex - b.currentListIndex)
-                   .map((progress) => (
+           <div className="space-y-4">
+                 {getSortedCardProgresses().map((progress) => (
               <Card key={progress.card.id} className="shadow-card hover:shadow-elevated transition-shadow animate-fade-in">
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
