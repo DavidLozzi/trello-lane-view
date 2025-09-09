@@ -75,12 +75,12 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
             <p className="text-sm text-muted-foreground">
               Get your API key from{' '}
               <a 
-                href="https://trello.com/app-key" 
+                href="https://trello.com/1/appKey/generate" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-trello-primary hover:underline inline-flex items-center gap-1"
               >
-                trello.com/app-key
+                trello.com/1/appKey/generate
                 <ExternalLink className="w-3 h-3" />
               </a>
             </p>
