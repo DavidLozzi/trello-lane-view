@@ -135,10 +135,20 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
             <>
               <div className="space-y-4">
                 <div className="text-sm text-muted-foreground">
-                  <p className="mb-2">1. Click the button above to open Trello authorization</p>
+                  <p className="mb-3">Follow these steps:</p>
+                  <p className="mb-2">1. Click the button below to open Trello authorization</p>
                   <p className="mb-2">2. After authorization, copy the token from the URL</p>
-                  <p className="mb-2">3. Paste the token below:</p>
+                  <p className="mb-2">3. Paste the token in the input field</p>
                 </div>
+
+                <Button 
+                  onClick={handleOAuthLogin} 
+                  className="w-full bg-trello-primary hover:bg-trello-primary/90 text-white"
+                  size="lg"
+                >
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  Open Trello Authorization
+                </Button>
 
                 <div className="space-y-2">
                   <Label htmlFor="token">Trello Token</Label>
