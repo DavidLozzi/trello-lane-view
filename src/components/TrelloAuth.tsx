@@ -30,7 +30,7 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
   }, []);
 
   const handleOAuthLogin = () => {
-    const redirectUri = `${window.location.origin}/oauth/callback`;
+    const redirectUri = window.location.origin;
     const authUrl = `https://trello.com/1/authorize?expiration=never&scope=read&response_type=token&name=Trello%20Swimlane%20Viewer&key=${TRELLO_API_KEY}&return_url=${encodeURIComponent(redirectUri)}`;
     window.location.href = authUrl;
   };

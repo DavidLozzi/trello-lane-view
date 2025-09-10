@@ -21,6 +21,24 @@ const Index = () => {
 
   // Load saved credentials on component mount
   useEffect(() => {
+    console.log('Index: Checking for OAuth token in URL...');
+    
+    // Check for OAuth token in URL hash first
+    const hash = window.location.hash;
+    if (hash.includes('token=')) {
+      const params = new URLSearchParams(hash.substring(1));
+      const token = params.get('token');
+      
+      if (token) {
+        console.log('Index: Found OAuth token in URL');
+        const apiKey = 'a3fda079880a6e03b474e7c434fcc79c';
+        handleAuthenticated(apiKey, token);
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return;
+      }
+    }
+    
     console.log('Index: Checking for saved credentials...');
     const savedCredentials = localStorage.getItem(STORAGE_KEY);
     if (savedCredentials) {
@@ -96,10 +114,6 @@ const Index = () => {
     }
   };
 
-  // Handle OAuth callback
-  if (location.pathname === '/oauth/callback') {
-    return <OAuthCallback onAuthenticated={handleAuthenticated} />;
-  }
 
   // Show authentication if not authenticated
   if (!authState) {
