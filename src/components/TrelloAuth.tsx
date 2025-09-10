@@ -135,20 +135,12 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
             <>
               <div className="space-y-4">
                 <div className="text-sm text-muted-foreground">
-                  <p className="mb-3">Follow these steps:</p>
-                  <p className="mb-2">1. Click the button below to open Trello authorization</p>
-                  <p className="mb-2">2. After authorization, copy the token from the URL</p>
-                  <p className="mb-2">3. Paste the token in the input field</p>
+                  <p className="mb-3">Get your Trello token:</p>
+                  <p className="mb-2">1. <a href="https://trello.com/1/authorize?expiration=never&scope=read&response_type=token&name=Trello%20Swimlane%20Viewer&key=a3fda079880a6e03b474e7c434fcc79c" target="_blank" className="text-trello-primary underline">Click here to authorize</a></p>
+                  <p className="mb-2">2. After authorization, look for the token in the URL after "#token="</p>
+                  <p className="mb-2">3. Copy that token and paste it below</p>
+                  <p className="text-xs text-amber-600">If you don't see a token in the URL, the page might show "Token: [your-token]" - copy that instead</p>
                 </div>
-
-                <Button 
-                  onClick={handleOAuthLogin} 
-                  className="w-full bg-trello-primary hover:bg-trello-primary/90 text-white"
-                  size="lg"
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Open Trello Authorization
-                </Button>
 
                 <div className="space-y-2">
                   <Label htmlFor="token">Trello Token</Label>
