@@ -120,7 +120,7 @@ export function BoardSelector({ apiKey, token, onBoardSelected }: BoardSelectorP
                   className="pb-3"
                   style={{
                     background: board.prefs.backgroundColor || '#0079bf',
-                    backgroundImage: board.prefs.background ? `url(${board.prefs.background})` : undefined,
+                    backgroundImage: board.prefs.backgroundImage || (board.prefs.background ? `url(${board.prefs.background})` : undefined),
                     backgroundSize: 'cover',
                     backgroundPosition: 'center'
                   }}

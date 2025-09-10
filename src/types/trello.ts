@@ -6,6 +6,7 @@ export interface TrelloBoard {
   prefs: {
     background: string;
     backgroundColor: string;
+    backgroundImage?: string;
   };
 }
 
