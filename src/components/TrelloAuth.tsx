@@ -15,7 +15,12 @@ const TRELLO_API_KEY = 'a3fda079880a6e03b474e7c434fcc79c';
 
 export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
   const [error, setError] = useState('');
+  const [showManualInput, setShowManualInput] = useState(false);
+  const [manualToken, setManualToken] = useState('');
+  const [isValidating, setIsValidating] = useState(false);
   const { toast } = useToast();
+
+  const isLovableSandbox = window.location.origin.includes('sandbox.lovable.dev');
 
   useEffect(() => {
     // Check for authentication error from URL params
@@ -32,11 +37,42 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
   const handleOAuthLogin = () => {
     const redirectUri = window.location.origin;
     console.log('OAuth redirect URI:', redirectUri);
-    console.log('Is Lovable sandbox:', redirectUri.includes('sandbox.lovable.dev'));
+    console.log('Is Lovable sandbox:', isLovableSandbox);
     
     const authUrl = `https://trello.com/1/authorize?expiration=never&scope=read&response_type=token&name=Trello%20Swimlane%20Viewer&key=${TRELLO_API_KEY}&return_url=${encodeURIComponent(redirectUri)}`;
     console.log('Auth URL:', authUrl);
-    window.location.href = authUrl;
+    window.open(authUrl, '_blank');
+  };
+
+  const handleManualToken = async () => {
+    if (!manualToken.trim()) {
+      setError('Please enter a token');
+      return;
+    }
+
+    setIsValidating(true);
+    setError('');
+
+    try {
+      // Test the token with Trello API
+      const response = await fetch(`https://api.trello.com/1/members/me?key=${TRELLO_API_KEY}&token=${manualToken.trim()}`);
+      
+      if (!response.ok) {
+        throw new Error('Invalid token or API key');
+      }
+
+      // Authentication successful
+      onAuthenticated(TRELLO_API_KEY, manualToken.trim());
+      toast({
+        title: "Success!",
+        description: "Successfully connected to Trello",
+      });
+    } catch (error) {
+      console.error('Token validation error:', error);
+      setError('Invalid token. Please check and try again.');
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   return (
@@ -52,30 +88,98 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="text-center space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Click the button below to securely authenticate with your Trello account
-            </p>
-          </div>
+          {!showManualInput ? (
+            <>
+              <div className="text-center space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Click the button below to authenticate with your Trello account
+                </p>
+              </div>
 
-          {error && (
-            <Alert className="border-destructive/50 text-destructive animate-fade-in">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
+              {error && (
+                <Alert className="border-destructive/50 text-destructive animate-fade-in">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              <Button 
+                onClick={handleOAuthLogin} 
+                className="w-full bg-trello-primary hover:bg-trello-primary/90 text-white"
+                size="lg"
+              >
+                <Trello className="w-4 h-4 mr-2" />
+                Connect with Trello {isLovableSandbox && "(Opens in new tab)"}
+              </Button>
+
+              {isLovableSandbox && (
+                <div className="text-center">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowManualInput(true)}
+                    className="text-sm"
+                  >
+                    <Key className="w-3 h-3 mr-2" />
+                    Use manual token instead
+                  </Button>
+                </div>
+              )}
+
+              <div className="text-xs text-center text-muted-foreground">
+                {isLovableSandbox 
+                  ? "Authentication will open in a new tab. Copy the token from the URL after authorization."
+                  : "You'll be redirected to Trello to authorize access to your boards"
+                }
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="space-y-4">
+                <div className="text-sm text-muted-foreground">
+                  <p className="mb-2">1. Click the button above to open Trello authorization</p>
+                  <p className="mb-2">2. After authorization, copy the token from the URL</p>
+                  <p className="mb-2">3. Paste the token below:</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="token">Trello Token</Label>
+                  <Input
+                    id="token"
+                    type="text"
+                    placeholder="Paste your Trello token here..."
+                    value={manualToken}
+                    onChange={(e) => setManualToken(e.target.value)}
+                  />
+                </div>
+
+                {error && (
+                  <Alert className="border-destructive/50 text-destructive animate-fade-in">
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={handleManualToken}
+                    disabled={isValidating || !manualToken.trim()}
+                    className="flex-1"
+                  >
+                    {isValidating ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Key className="w-4 h-4 mr-2" />
+                    )}
+                    Validate Token
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowManualInput(false)}
+                  >
+                    Back
+                  </Button>
+                </div>
+              </div>
+            </>
           )}
-
-          <Button 
-            onClick={handleOAuthLogin} 
-            className="w-full bg-trello-primary hover:bg-trello-primary/90 text-white"
-            size="lg"
-          >
-            <Trello className="w-4 h-4 mr-2" />
-            Connect with Trello
-          </Button>
-
-          <div className="text-xs text-center text-muted-foreground">
-            You'll be redirected to Trello to authorize access to your boards
-          </div>
         </CardContent>
       </Card>
     </div>
