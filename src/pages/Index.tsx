@@ -21,39 +21,48 @@ const Index = () => {
 
   // Load saved credentials on component mount
   useEffect(() => {
-    console.log('Index: Checking for OAuth token in URL...');
+    console.log('=== AUTHENTICATION CHECK START ===');
+    console.log('Current URL:', window.location.href);
+    console.log('Origin:', window.location.origin);
+    console.log('Hash:', window.location.hash);
+    console.log('Pathname:', window.location.pathname);
+    console.log('Is Lovable sandbox:', window.location.origin.includes('sandbox.lovable.dev'));
     
     // Check for OAuth token in URL hash first
     const hash = window.location.hash;
     if (hash.includes('token=')) {
+      console.log('✅ Found token in URL hash');
       const params = new URLSearchParams(hash.substring(1));
       const token = params.get('token');
       
       if (token) {
-        console.log('Index: Found OAuth token in URL');
+        console.log('✅ Token extracted successfully:', token.substring(0, 10) + '...');
         const apiKey = 'a3fda079880a6e03b474e7c434fcc79c';
         handleAuthenticated(apiKey, token);
         // Clean up URL
         window.history.replaceState({}, document.title, window.location.pathname);
         return;
       }
+    } else {
+      console.log('❌ No token found in URL hash');
     }
     
-    console.log('Index: Checking for saved credentials...');
+    console.log('🔍 Checking for saved credentials...');
     const savedCredentials = localStorage.getItem(STORAGE_KEY);
     if (savedCredentials) {
       try {
         const parsed = JSON.parse(savedCredentials);
-        console.log('Index: Found saved credentials, setting auth state');
+        console.log('✅ Found saved credentials, setting auth state');
         setAuthState(parsed);
       } catch (error) {
-        console.log('Index: Invalid stored credentials, clearing...');
+        console.log('❌ Invalid stored credentials, clearing...');
         // Clear invalid stored data
         localStorage.removeItem(STORAGE_KEY);
       }
     } else {
-      console.log('Index: No saved credentials found');
+      console.log('❌ No saved credentials found');
     }
+    console.log('=== AUTHENTICATION CHECK END ===');
   }, []);
 
   // Load board from URL if authenticated and boardId is present
