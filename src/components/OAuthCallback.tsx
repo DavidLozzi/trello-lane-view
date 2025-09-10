@@ -7,14 +7,20 @@ interface OAuthCallbackProps {
   onAuthenticated: (apiKey: string, token: string) => void;
 }
 
-const TRELLO_APP_KEY = '4d368ac4406e65484129bfde9916c85c';
-
 export function OAuthCallback({ onAuthenticated }: OAuthCallbackProps) {
   const navigate = useNavigate();
 
   useEffect(() => {
     const handleCallback = async () => {
       try {
+        // Get the API key from localStorage (should be stored during auth flow)
+        const savedCredentials = localStorage.getItem('trello_api_key');
+        const apiKey = savedCredentials || '';
+        
+        if (!apiKey) {
+          throw new Error('No API key found. Please restart authentication.');
+        }
+
         // Extract token from URL fragment (Trello returns it after #)
         const hash = window.location.hash;
         const params = new URLSearchParams(hash.substring(1));
@@ -25,16 +31,21 @@ export function OAuthCallback({ onAuthenticated }: OAuthCallbackProps) {
         }
 
         // Test the token with Trello API
-        const response = await fetch(`https://api.trello.com/1/members/me?key=${TRELLO_APP_KEY}&token=${token}`);
+        const response = await fetch(`https://api.trello.com/1/members/me?key=${apiKey}&token=${token}`);
         if (!response.ok) {
           throw new Error('Invalid authentication token');
         }
 
+        // Clean up temporary API key storage
+        localStorage.removeItem('trello_api_key');
+        
         // Authentication successful
-        onAuthenticated(TRELLO_APP_KEY, token);
+        onAuthenticated(apiKey, token);
         navigate('/');
       } catch (error) {
         console.error('OAuth callback error:', error);
+        // Clean up on error
+        localStorage.removeItem('trello_api_key');
         // Redirect back to auth page on error
         navigate('/?error=auth_failed');
       }
