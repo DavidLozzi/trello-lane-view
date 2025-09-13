@@ -42,6 +42,8 @@ import {
 } from 'lucide-react';
 import { TrelloBoard, TrelloCard, TrelloList, CardProgress } from '@/types/trello';
 import { cn } from '@/lib/utils';
+import { createTrelloClient } from '@/api/trelloClient';
+import { sanitizeText, openInNewTabSafe, safeImageUrl } from '@/utils/security';
 
 interface SwimlaneViewProps {
   board: TrelloBoard;
@@ -71,41 +73,21 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
       setIsLoading(true);
       setError('');
 
-      // Fetch lists from the selected board
-      const listsResponse = await fetch(
-        `https://api.trello.com/1/boards/${board.id}/lists?key=${apiKey}&token=${token}&filter=open&fields=id,name,pos,closed`
-      );
-      
-      if (!listsResponse.ok) {
-        throw new Error('Failed to fetch board lists');
-      }
-
-      const listsData: TrelloList[] = await listsResponse.json();
-      
-      // Fetch cards from the selected board
-      const cardsResponse = await fetch(
-        `https://api.trello.com/1/boards/${board.id}/cards?key=${apiKey}&token=${token}&fields=id,name,desc,pos,due,dateLastActivity,labels,idList,url,cover,closed&list=true`
-      );
-      
-      if (!cardsResponse.ok) {
-        throw new Error('Failed to fetch board cards');
-      }
-
-      const cardsData: any[] = await cardsResponse.json();
+      const client = createTrelloClient({ apiKey, token });
+      const [listsData, cardsDataRaw] = await Promise.all([
+        client.getLists(board.id),
+        client.getCards(board.id),
+      ]);
+      const cardsData: any[] = cardsDataRaw as any[];
       
       // Transform cards to match our interface and fetch move dates
       const transformedCards: TrelloCard[] = await Promise.all(
-        cardsData.map(async (card) => {
+        (cardsData as any[]).map(async (card: any) => {
           // Get the date when card was moved to current list
           let movedToCurrentListDate: string | undefined;
           
           try {
-            const actionsResponse = await fetch(
-              `https://api.trello.com/1/cards/${card.id}/actions?key=${apiKey}&token=${token}&filter=updateCard:idList&limit=10`
-            );
-            
-            if (actionsResponse.ok) {
-              const actions = await actionsResponse.json();
+            const actions = await client.getCardActions(card.id);
               
               // Find the most recent action that moved the card to its current list
               const moveAction = actions.find((action: any) => 
@@ -118,7 +100,6 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                 // If no specific move found, use the most recent action date
                 movedToCurrentListDate = actions[0].date;
               }
-            }
           } catch (error) {
             console.warn(`Failed to fetch actions for card ${card.id}:`, error);
           }
@@ -128,11 +109,11 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
             name: card.name,
             desc: card.desc || '',
             pos: card.pos,
-            due: card.due,
+            due: card.due || undefined,
             dateLastActivity: card.dateLastActivity,
             movedToCurrentListDate,
             closed: card.closed || false,
-            labels: card.labels || [],
+            labels: (card.labels || []) as any[],
             list: {
               id: card.idList,
               name: card.list?.name || ''
@@ -489,7 +470,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
         className="border-b shadow-soft relative overflow-hidden"
         style={{
           backgroundColor: board.prefs.backgroundColor || '#0079bf',
-          backgroundImage: board.prefs.background ? `url(${board.prefs.background})` : undefined,
+          backgroundImage: safeImageUrl(board.prefs.background) ? `url(${safeImageUrl(board.prefs.background)})` : undefined,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat'
@@ -510,7 +491,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                 Back to Boards
               </Button>
               <div>
-                <h1 className="text-2xl font-bold text-white drop-shadow-sm">{board.name}</h1>
+                <h1 className="text-2xl font-bold text-white drop-shadow-sm">{sanitizeText(board.name)}</h1>
                 <p className="text-sm text-white/80">
                   {cardProgresses.length} cards • {lists.length} columns
                 </p>
@@ -539,7 +520,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
               <Button 
                 variant="outline"
                 size="sm"
-                onClick={() => window.open(board.url, '_blank')}
+                onClick={() => window.open(board.url, '_blank', 'noopener,noreferrer')}
                 className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white"
               >
                 <ExternalLink className="w-4 h-4 mr-2" />
@@ -548,10 +529,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
               <Button 
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  localStorage.removeItem('trello_credentials');
-                  window.location.href = '/';
-                }}
+                onClick={() => { window.location.href = '/'; }}
                 className="bg-red-500/10 border-red-400/20 text-white hover:bg-red-500/20 hover:text-white"
               >
                 <LogOut className="w-4 h-4 mr-2" />
@@ -771,7 +749,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                        </p>
                        {progress.card.desc && (
                          <CardDescription className="mt-1 text-sm line-clamp-2">
-                           {progress.card.desc}
+                           {sanitizeText(progress.card.desc)}
                          </CardDescription>
                        )}
                       <div className="flex items-center gap-2 mt-2">
@@ -812,7 +790,7 @@ export function SwimlaneView({ board, apiKey, token, onBack }: SwimlaneViewProps
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => window.open(progress.card.url, '_blank')}
+                      onClick={() => openInNewTabSafe(progress.card.url)}
                       className="shrink-0"
                     >
                       <ExternalLink className="w-4 h-4" />

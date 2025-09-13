@@ -2,15 +2,12 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
+import { consumeAndValidateOAuthState, useAuth } from '@/context/AuthContext';
+import { TRELLO_API_KEY } from '@/config';
 
-interface OAuthCallbackProps {
-  onAuthenticated: (apiKey: string, token: string) => void;
-}
-
-const TRELLO_API_KEY = 'a3fda079880a6e03b474e7c434fcc79c';
-
-export function OAuthCallback({ onAuthenticated }: OAuthCallbackProps) {
+export function OAuthCallback({ onAuthenticated }: { onAuthenticated?: (apiKey: string, token: string) => void }) {
   const navigate = useNavigate();
+  const { setToken } = useAuth();
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -19,22 +16,19 @@ export function OAuthCallback({ onAuthenticated }: OAuthCallbackProps) {
         const hash = window.location.hash;
         const params = new URLSearchParams(hash.substring(1));
         const token = params.get('token');
+        const state = params.get('state');
 
         if (!token) {
           throw new Error('No token received from Trello');
         }
-
-        // Test the token with Trello API
-        const response = await fetch(`https://api.trello.com/1/members/me?key=${TRELLO_API_KEY}&token=${token}`);
-        if (!response.ok) {
-          throw new Error('Invalid authentication token');
+        if (!consumeAndValidateOAuthState(state)) {
+          throw new Error('Invalid OAuth state');
         }
 
-        // Authentication successful
-        onAuthenticated(TRELLO_API_KEY, token);
+        await setToken(token);
+        onAuthenticated?.(TRELLO_API_KEY, token);
         navigate('/');
       } catch (error) {
-        console.error('OAuth callback error:', error);
         // Redirect back to auth page on error
         navigate('/?error=auth_failed');
       }
