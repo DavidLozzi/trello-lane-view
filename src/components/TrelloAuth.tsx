@@ -4,23 +4,20 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Key, Trello, ExternalLink } from 'lucide-react';
+import { Loader2, Key, Trello } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
+import { TRELLO_API_KEY, buildTrelloAuthorizeUrl } from '@/config';
 
-interface TrelloAuthProps {
-  onAuthenticated: (apiKey: string, token: string) => void;
-}
-
-const TRELLO_API_KEY = 'a3fda079880a6e03b474e7c434fcc79c';
-
-export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
+export function TrelloAuth() {
   const [error, setError] = useState('');
   const [showManualInput, setShowManualInput] = useState(false);
   const [manualToken, setManualToken] = useState('');
   const [isValidating, setIsValidating] = useState(false);
   const { toast } = useToast();
+  const { startOAuth, setToken } = useAuth();
 
-  const isLovableSandbox = window.location.origin.includes('sandbox.lovable.dev');
+  const isLovableSandbox = typeof window !== 'undefined' && window.location.origin.includes('sandbox.lovable.dev');
 
   useEffect(() => {
     // Check for authentication error from URL params
@@ -35,13 +32,11 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
   }, []);
 
   const handleOAuthLogin = () => {
-    const redirectUri = window.location.origin;
-    console.log('OAuth redirect URI:', redirectUri);
-    console.log('Is Lovable sandbox:', isLovableSandbox);
-    
-    const authUrl = `https://trello.com/1/authorize?expiration=never&scope=read&response_type=token&name=Trello%20Swimlane%20Viewer&key=${TRELLO_API_KEY}&return_url=${encodeURIComponent(redirectUri)}`;
-    console.log('Auth URL:', authUrl);
-    window.open(authUrl, '_blank');
+    if (!TRELLO_API_KEY) {
+      setError('Missing Trello API key. Set VITE_TRELLO_API_KEY.');
+      return;
+    }
+    startOAuth();
   };
 
   const handleManualToken = async () => {
@@ -54,21 +49,12 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
     setError('');
 
     try {
-      // Test the token with Trello API
-      const response = await fetch(`https://api.trello.com/1/members/me?key=${TRELLO_API_KEY}&token=${manualToken.trim()}`);
-      
-      if (!response.ok) {
-        throw new Error('Invalid token or API key');
-      }
-
-      // Authentication successful
-      onAuthenticated(TRELLO_API_KEY, manualToken.trim());
+      await setToken(manualToken.trim());
       toast({
         title: "Success!",
         description: "Successfully connected to Trello",
       });
     } catch (error) {
-      console.error('Token validation error:', error);
       setError('Invalid token. Please check and try again.');
     } finally {
       setIsValidating(false);
@@ -136,7 +122,7 @@ export function TrelloAuth({ onAuthenticated }: TrelloAuthProps) {
               <div className="space-y-4">
                 <div className="text-sm text-muted-foreground">
                   <p className="mb-3">Get your Trello token:</p>
-                  <p className="mb-2">1. <a href="https://trello.com/1/authorize?expiration=never&scope=read&response_type=token&name=Trello%20Swimlane%20Viewer&key=a3fda079880a6e03b474e7c434fcc79c" target="_blank" className="text-trello-primary underline">Click here to authorize</a></p>
+                  <p className="mb-2">1. <a href={buildTrelloAuthorizeUrl('manual')} target="_blank" rel="noopener noreferrer" className="text-trello-primary underline">Click here to authorize</a></p>
                   <p className="mb-2">2. After authorization, look for the token in the URL after "#token="</p>
                   <p className="mb-2">3. Copy that token and paste it below</p>
                   <p className="text-xs text-amber-600">If you don't see a token in the URL, the page might show "Token: [your-token]" - copy that instead</p>

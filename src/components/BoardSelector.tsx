@@ -4,6 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2, Trello, Users, ExternalLink, LogOut } from 'lucide-react';
 import { TrelloBoard } from '@/types/trello';
+import { createTrelloClient } from '@/api/trelloClient';
+import { sanitizeText, safeImageUrl, openInNewTabSafe } from '@/utils/security';
 
 interface BoardSelectorProps {
   apiKey: string;
@@ -17,31 +19,16 @@ export function BoardSelector({ apiKey, token, onBoardSelected }: BoardSelectorP
   const [error, setError] = useState('');
 
   useEffect(() => {
-    console.log('BoardSelector: Component mounted, fetching boards...');
     fetchBoards();
   }, []);
 
   const fetchBoards = async () => {
     try {
-      console.log('BoardSelector: Starting fetch with apiKey:', apiKey?.slice(0, 8) + '...', 'token:', token?.slice(0, 8) + '...');
       setIsLoading(true);
-      const response = await fetch(
-        `https://api.trello.com/1/members/me/boards?key=${apiKey}&token=${token}&filter=open&fields=id,name,desc,url,prefs`
-      );
-      
-      console.log('BoardSelector: Response status:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.log('BoardSelector: Error response:', errorText);
-        throw new Error('Failed to fetch boards');
-      }
-
-      const boardsData = await response.json();
-      console.log('BoardSelector: Fetched boards:', boardsData.length);
-      setBoards(boardsData);
+      const client = createTrelloClient({ apiKey, token });
+      const boardsData = await client.getBoards();
+      setBoards(boardsData as TrelloBoard[]);
     } catch (err) {
-      console.log('BoardSelector: Error fetching boards:', err);
       setError(err instanceof Error ? err.message : 'Failed to load boards');
     } finally {
       setIsLoading(false);
@@ -90,10 +77,7 @@ export function BoardSelector({ apiKey, token, onBoardSelected }: BoardSelectorP
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => {
-              localStorage.removeItem('trello_credentials');
-              window.location.href = '/';
-            }}
+            onClick={() => { window.location.href = '/'; }}
             className="mt-4 text-white/80 hover:text-white hover:bg-white/10"
           >
             <LogOut className="w-4 h-4 mr-2" />
@@ -120,20 +104,20 @@ export function BoardSelector({ apiKey, token, onBoardSelected }: BoardSelectorP
                   className="pb-3"
                   style={{
                     background: board.prefs.backgroundColor || '#0079bf',
-                    backgroundImage: board.prefs.backgroundImage || (board.prefs.background ? `url(${board.prefs.background})` : undefined),
+                    backgroundImage: safeImageUrl(board.prefs.backgroundImage || board.prefs.background) ? `url(${safeImageUrl(board.prefs.backgroundImage || board.prefs.background)})` : undefined,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center'
                   }}
                 >
                   <div className="bg-white/90 backdrop-blur-sm rounded-lg p-3">
                     <CardTitle className="text-lg font-semibold text-gray-900 group-hover:text-trello-primary transition-colors">
-                      {board.name}
+                      {sanitizeText(board.name)}
                     </CardTitle>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-3">
                   <CardDescription className="text-sm mb-3 line-clamp-2">
-                    {board.desc || 'No description available'}
+                    {sanitizeText(board.desc || 'No description available')}
                   </CardDescription>
                   <div className="flex items-center justify-between">
                     <Button 
@@ -142,7 +126,7 @@ export function BoardSelector({ apiKey, token, onBoardSelected }: BoardSelectorP
                       className="text-trello-primary hover:text-trello-primary/80"
                       onClick={(e) => {
                         e.stopPropagation();
-                        window.open(board.url, '_blank');
+                        openInNewTabSafe(board.url);
                       }}
                     >
                       <ExternalLink className="w-4 h-4 mr-1" />
